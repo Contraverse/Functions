@@ -1,0 +1,12 @@
+{
+  "QUESTION": "What is your favorite color?",
+  "ANSWERS": [
+    "Red",
+    "Blue"
+  ],
+  "USER_ID": "USER_ID",
+  "OPPONENT_ID": "OPPONENT_ID",
+  "AVATAR": "www.image.com",
+  "GENDER": "female",
+  "USERNAME": "Joe West"
+}
