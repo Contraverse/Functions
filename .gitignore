@@ -62,3 +62,5 @@ typings/
 
 # User defined
 .idea/
+.DS_Store
+functions/config/auth.json

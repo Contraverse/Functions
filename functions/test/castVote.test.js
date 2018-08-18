@@ -5,8 +5,8 @@ const projectConfig = {
   projectId: 'controverse-f770c',
   databaseURL: 'https://controverse-f770c.firebaseio.com'
 };
+admin.initializeApp(projectConfig);
 
-const test = require('firebase-functions-test')(projectConfig, 'config/auth.json');
 const { removePoll, removeUser } = require('./utils');
 const castVote = require('../src/castVote')._castVote;
 const createPoll = require('../src/createPoll')._createPoll;
@@ -24,7 +24,6 @@ describe('Case Vote', () => {
   });
 
   after(() => {
-    test.cleanup();
     removePoll(pollID);
     removeUser(USER_ID);
   });
@@ -35,29 +34,22 @@ describe('Case Vote', () => {
       .then(() => {
         const db = admin.firestore();
         const userRef = db.doc(`Profiles/${USER_ID}`);
-        const resultsRef = db.collection(`Polls/${pollID}/Results`);
-        const totalVotesRef = resultsRef.doc('totalVotes');
-        const genderVotesRef = resultsRef.doc('genderVotes');
-        const targetVotes = [1, 0];
+        const totalVotesRef = db.doc(`Results/${pollID}`);
 
         return Promise.all([
           userRef.collection('Polls').doc(pollID).get(),
           totalVotesRef.get(),
-          genderVotesRef.get(),
         ])
-          .then(docs => {
-            const userPolls = docs[0].data();
-            assert.deepEqual(userPolls, { answer });
+      }).then(docs => {
+        const targetVotes = [1, 0];
 
-            const totalVotes = docs[1].data();
-            assert.deepEqual(totalVotes.counts, targetVotes);
+        const userPolls = docs[0].data();
+        assert.deepEqual(userPolls, { answer });
 
-            const genderVotes = docs[2].data();
-            assert.deepEqual(genderVotes[GENDER], targetVotes);
+        const totalVotes = docs[1].data();
+        assert.deepEqual(totalVotes.counts, targetVotes);
 
-            const otherResults = genderVotes[Object.keys(genderVotes).find(key => key !== GENDER)];
-            return assert.deepEqual(otherResults, Array(ANSWERS.length).fill(0));
-          })
+        return true;
       })
   })
 });

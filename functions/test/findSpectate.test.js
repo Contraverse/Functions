@@ -1,22 +1,18 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
+const { removeDocument } = require('./utils');
 
 const projectConfig = {
   projectId: 'controverse-f770c',
   databaseURL: 'https://controverse-f770c.firebaseio.com'
 };
 
-const test = require('firebase-functions-test')(projectConfig, 'config/auth.json');
 const findSpectate = require('../src/findSpectate')._findSpectate;
 
 const { USER_ID } = require('./testData');
 
 describe('Find Spectate', () => {
   var pollID = 'FAKE_POLL_ID';
-
-  after(() => {
-    test.cleanup();
-  });
 
   describe('Test without active debate', () => {
     it('should not find a spectate', () => {
@@ -38,9 +34,13 @@ describe('Find Spectate', () => {
     });
 
     after(() => {
-      return admin.firestore()
-        .doc(`Debates/${docID}`)
-        .delete();
+      const db = admin.firestore();
+      const debateRef = db.doc(`Debates/${docID}`);
+      const userRef = db.doc(`Profiles/${USER_ID}`);
+      return Promise.all([
+        removeDocument(debateRef),
+        removeDocument(userRef)
+      ])
     });
 
     it('should return a valid debate ID', () => {

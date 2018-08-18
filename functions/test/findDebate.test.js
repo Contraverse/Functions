@@ -6,7 +6,6 @@ const projectConfig = {
   databaseURL: 'https://controverse-f770c.firebaseio.com'
 };
 
-const test = require('firebase-functions-test')(projectConfig, 'config/auth.json');
 const findDebate = require('../src/findDebate')._findDebate;
 const createPoll = require('../src/createPoll')._createPoll;
 const { removePoll } = require('./utils');
@@ -21,7 +20,6 @@ describe('Find Debate', () => {
   });
 
   after(() => {
-    test.cleanup();
     return removePoll(pollID);
   });
 
