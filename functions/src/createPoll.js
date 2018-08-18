@@ -7,6 +7,7 @@ function _createPoll(question, answers) {
   const batch = db.batch();
   batch.set(pollRef, {
     title: question,
+    pending: true,
     answers,
     dateCreated: admin.firestore.FieldValue.serverTimestamp()
   });
@@ -18,8 +19,13 @@ function _createPoll(question, answers) {
 
 function createPoll(req, res) {
   const { question, answers } = req.body;
+  if(question === undefined)
+    return res.status(400).send('No question');
+  if(answers === undefined)
+    return res.status(400).send('No answers');
+
   return _createPoll(question, answers)
-    .then(pollID => res.send(pollID));
+    .then(pollID => res.status(200).send(pollID));
 }
 
 module.exports = { createPoll, _createPoll };

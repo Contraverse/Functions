@@ -2,8 +2,13 @@ const admin = require('firebase-admin');
 
 function findSpectate(req, res) {
   const { userID, pollID } = req.body;
+  if(userID === undefined)
+    return res.status(400).send('No user ID');
+  if(pollID === undefined)
+    return res.status(400).send('No poll ID');
+
   return _findSpectate(userID, pollID)
-    .then(result => res.send(JSON.stringify(result)));
+    .then(result => res.status(200).send(JSON.stringify(result)));
 }
 
 function _findSpectate(userID, pollID) {

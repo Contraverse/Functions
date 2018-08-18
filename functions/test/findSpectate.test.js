@@ -1,12 +1,6 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
 const { removeDocument } = require('./utils');
-
-const projectConfig = {
-  projectId: 'controverse-f770c',
-  databaseURL: 'https://controverse-f770c.firebaseio.com'
-};
-
 const findSpectate = require('../src/findSpectate')._findSpectate;
 
 const { USER_ID } = require('./testData');

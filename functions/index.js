@@ -1,6 +1,6 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
-const { findDebate, castVote, findSpectate, leaveConversation, createPoll } = require('./src');
+const { findDebate, castVote, findSpectate, leaveConversation, createPoll, polls } = require('./src');
 
 admin.initializeApp();
 
@@ -13,3 +13,4 @@ exports.castVote = functions.https.onRequest(castVote);
 exports.findSpectate = functions.https.onRequest(findSpectate);
 exports.leaveConversation = functions.https.onRequest(leaveConversation);
 exports.createPoll = functions.https.onRequest(createPoll);
+exports.polls = functions.https.onRequest(polls);

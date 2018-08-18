@@ -1,11 +1,5 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
-
-const projectConfig = {
-  projectId: 'controverse-f770c',
-  databaseURL: 'https://controverse-f770c.firebaseio.com'
-};
-
 const findDebate = require('../src/findDebate')._findDebate;
 const createPoll = require('../src/createPoll')._createPoll;
 const { removePoll } = require('./utils');

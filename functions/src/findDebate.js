@@ -2,8 +2,15 @@ const admin = require('firebase-admin');
 
 function findDebate(req, res) {
   const { userID, pollID, category } = req.body;
+  console.log(req.body);
+  if(userID === undefined)
+    return res.status(400).send('No user ID');
+  if(pollID === undefined)
+    return res.status(400).send('No poll ID');
+  if(category === undefined)
+    return res.status(400).send('No category');
   return _findDebate(userID, pollID, category)
-    .then(result => res.send(JSON.stringify(result)));
+    .then(result => res.status(200).send(JSON.stringify(result)));
 }
 
 // TODO: Only works for 2 answer choices. Make more general

@@ -16,7 +16,7 @@ module.exports = function (req, res) {
         return deleteDebate(t, debateRef);
       }
     }).then(() => {
-      return res.send('OK');
+      return res.status(200).send('OK');
     });
   })
 };

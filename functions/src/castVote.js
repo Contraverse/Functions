@@ -2,8 +2,15 @@ const firebase = require('firebase-admin');
 
 function castVote(req, res) {
   const { userID, pollID, answer } = req.body;
+  if(userID === undefined)
+    return res.status(400).send('No user ID');
+  if(pollID === undefined)
+    return res.status(400).send('No poll ID');
+  if(answer === undefined)
+    return res.status(400).send('No answer');
+
   return _castVote(userID, pollID, answer)
-    .then(result => res.send(result));
+    .then(result => res.status(200).send(result));
 }
 
 function _castVote(userID, pollID, answer) {
