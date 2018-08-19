@@ -10,7 +10,11 @@ function findDebate(req, res) {
   if(category === undefined)
     return res.status(400).send('No category');
   return _findDebate(userID, pollID, category)
-    .then(result => res.status(200).send(JSON.stringify(result)));
+    .then(result => {
+      if (result.found)
+        return res.status(200).send(result.opponentID);
+      return res.status(204).send('OK');
+    });
 }
 
 // TODO: Only works for 2 answer choices. Make more general

@@ -15,8 +15,10 @@ describe('Case Vote', () => {
   });
 
   after(() => {
-    removePoll(pollID);
-    removeUser(USER_ID);
+    return Promise.all([
+      removePoll(pollID),
+      removeUser(USER_ID)
+    ]);
   });
 
   it('should case a vote', () => {
