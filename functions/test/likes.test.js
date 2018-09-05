@@ -3,8 +3,6 @@ const admin = require('firebase-admin');
 const { removeDocument } = require('./utils');
 const { likeMessage } = require('../src/likes');
 
-const MESSAGE = require('./testData').MESSAGES[0];
-
 describe('Likes', () => {
   const DEBATE_ID = 'FAKE_DEBATE_ID';
   var MESSAGE_ID = 'FAKE_MESSAGE_ID';

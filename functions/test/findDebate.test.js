@@ -1,8 +1,8 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
 const findDebate = require('../src/findDebate')._findDebate;
-const createPoll = require('../src/createPoll')._createPoll;
-const createUser = require('../src/createUser')._createUser;
+const { createPoll } = require('../src/polls');
+const { createUser } = require('../src/users');
 const { removePoll, removeUser } = require('./utils');
 
 const { QUESTION, ANSWERS, USER_ID, AVATAR, USERNAME, OPPONENT_ID } = require('./testData');

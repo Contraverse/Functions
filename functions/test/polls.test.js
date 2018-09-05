@@ -2,7 +2,7 @@ const { assert } = require('chai');
 const { removePoll } = require('./utils');
 
 const { getPolls } = require('../src/polls');
-const createPoll = require('../src/createPoll')._createPoll;
+const { createPoll } = require('../src/polls');
 
 const { QUESTION, ANSWERS } = require('./testData');
 

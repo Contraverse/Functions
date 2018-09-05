@@ -32,7 +32,5 @@ function deleteDebate(t, ref) {
 }
 
 function isActive(users) {
-  return Object.keys(users).some(userID => {
-    return users[userID];
-  })
+  return Object.keys(users).some(userID => users[userID])
 }

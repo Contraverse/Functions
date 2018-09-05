@@ -2,7 +2,6 @@ const admin = require('firebase-admin');
 
 function findDebate(req, res) {
   const { userID, pollID, category } = req.body;
-  console.log(req.body);
   if(userID === undefined)
     return res.status(400).send('No user ID');
   if(pollID === undefined)

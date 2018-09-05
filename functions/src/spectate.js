@@ -57,4 +57,4 @@ function removeSpectate(userID, chatID) {
     .delete();
 }
 
-module.exports = { findSpectate: spectate, getSpectate, setSpectate, removeSpectate };
+module.exports = { spectate, getSpectate, setSpectate, removeSpectate };

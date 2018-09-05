@@ -1,7 +1,7 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
 const { removePoll } = require('./utils');
-const createPoll = require('../src/createPoll')._createPoll;
+const { createPoll } = require('../src/polls');
 
 const QUESTION = 'What is your favorite color';
 const ANSWERS = ['Red', 'Blue'];

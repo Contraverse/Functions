@@ -2,7 +2,7 @@ const { assert } = require('chai');
 const admin = require('firebase-admin');
 const { removePoll, removeUser } = require('./utils');
 const castVote = require('../src/castVote')._castVote;
-const createPoll = require('../src/createPoll')._createPoll;
+const { createPoll } = require('../src/polls');
 
 const { QUESTION, ANSWERS, USER_ID } = require('./testData');
 
