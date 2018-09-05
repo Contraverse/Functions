@@ -2,6 +2,7 @@ const admin = require('firebase-admin');
 
 function spectate(req, res) {
   const { userID } = req.query;
+  const { chatID } = req.body;
   if (userID === undefined)
     return res.status(400).send('No user ID');
   if (req.method === 'GET') {
@@ -16,9 +17,19 @@ function spectate(req, res) {
         return res.status(204).send('Spectate not found');
       });
   }
-  const { chatID } = req.body;
-  return setSpectate(userID, chatID)
-    .then(() => res.status(200).send('OK'));
+  if (req.method === 'PUT') {
+    if (chatID === undefined)
+      return res.status(400).send('No chatID');
+    return setSpectate(userID, chatID)
+      .then(() => res.status(200).send('OK'));
+  }
+  if (req.method === 'DELETE') {
+    if (chatID === undefined)
+      return res.status(400).send('No chatID');
+    return removeSpectate(userID, chatID)
+      .then(() => res.status(200).send('OK'))
+  }
+  return res.status(400).send('Invalid request method');
 }
 
 function getSpectate(userID, pollID) {
@@ -40,4 +51,10 @@ function setSpectate(userID, chatID) {
     .set({ active: true });
 }
 
-module.exports = { findSpectate: spectate, getSpectate, setSpectate };
+function removeSpectate(userID, chatID) {
+  return admin.firestore()
+    .doc(`Profiles/${userID}/Spectates/${chatID}`)
+    .delete();
+}
+
+module.exports = { findSpectate: spectate, getSpectate, setSpectate, removeSpectate };

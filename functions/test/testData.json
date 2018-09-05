@@ -4,6 +4,19 @@
     "Red",
     "Blue"
   ],
+  "MESSAGES": [
+    {
+      "createdAt": "today",
+      "text": "Hello World",
+      "userID": "USER_ID"
+    },
+    {
+      "createdAt": "today",
+      "text": "Hello Back",
+      "source": "www.source.com",
+      "userID": "USER_ID2"
+    }
+  ],
   "USER_ID": "USER_ID",
   "OPPONENT_ID": "OPPONENT_ID",
   "AVATAR": "www.image.com",

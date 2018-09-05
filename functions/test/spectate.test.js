@@ -1,7 +1,7 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
 const { removeDocument } = require('./utils');
-const { getSpectate, setSpectate } = require('../src/spectate');
+const { getSpectate, setSpectate, removeSpectate } = require('../src/spectate');
 
 const { USER_ID } = require('./testData');
 
@@ -49,9 +49,21 @@ describe('Spectate', () => {
       const spectateRef = admin.firestore()
         .doc(`Profiles/${USER_ID}/Spectates/${DOC_ID}`);
       return setSpectate(USER_ID, DOC_ID)
-        .then(() => {
-          return spectateRef.get()
-        }).then(doc => assert.isTrue(doc.data().active));
+        .then(() => spectateRef.get())
+        // Assert
+        .then(doc => assert.isTrue(doc.data().active));
+    })
+
+    it('should unsubscribe to a debate', () => {
+      // Arrange
+      const spectateRef = admin.firestore()
+        .doc(`Profiles/${USER_ID}/Spectates/${DOC_ID}`);
+      // Act
+      return spectateRef.set({ active: true })
+        .then(() => removeSpectate(USER_ID, DOC_ID))
+        .then(() => spectateRef.get())
+        // Assert
+        .then(doc => assert.isFalse(doc.exists));
     })
   })
 });
