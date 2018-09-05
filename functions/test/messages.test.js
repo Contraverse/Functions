@@ -40,6 +40,7 @@ describe('Messages', () => {
       })
       .then(snapshot => {
         const result = snapshot.docs.map(doc => doc.data())
+        result.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
         assert.deepEqual(result, messages)
       });
   }

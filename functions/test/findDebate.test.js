@@ -2,19 +2,27 @@ const { assert } = require('chai');
 const admin = require('firebase-admin');
 const findDebate = require('../src/findDebate')._findDebate;
 const createPoll = require('../src/createPoll')._createPoll;
-const { removePoll } = require('./utils');
+const createUser = require('../src/createUser')._createUser;
+const { removePoll, removeUser } = require('./utils');
 
-const { QUESTION, ANSWERS, USER_ID, OPPONENT_ID } = require('./testData');
+const { QUESTION, ANSWERS, USER_ID, AVATAR, USERNAME, OPPONENT_ID } = require('./testData');
 
 describe('Find Debate', () => {
   var pollID;
   before(() => {
-    return createPoll(QUESTION, ANSWERS)
-      .then(id => pollID = id);
+    return Promise.all([
+      createPoll(QUESTION, ANSWERS),
+      createUser(USER_ID, AVATAR, USERNAME),
+      createUser(OPPONENT_ID, AVATAR, USERNAME),
+    ]).then(results => pollID = results[0]);
   });
 
   after(() => {
-    return removePoll(pollID);
+    return Promise.all([
+      removePoll(pollID),
+      removeUser(USER_ID),
+      removeUser(OPPONENT_ID)
+    ]);
   });
 
   describe('Test Queue', () => {
@@ -60,16 +68,19 @@ describe('Find Debate', () => {
         .then(() => findDebate(OPPONENT_ID, pollID, opponentAnswer))
         .then(({ found }) => {
           assert.isTrue(found);
-          return db.collection('Debates')
-            .where('pollID', '==', pollID).get()
-        }).then(snapshot => {
+          return Promise.all([
+            db.collection('Debates').where('pollID', '==', pollID).get(),
+            db.doc(`Profiles/${USER_ID}`).get(),
+            db.doc(`Profiles/${OPPONENT_ID}`).get()
+          ]);
+        }).then(([snapshot, user, opponent]) => {
           const debates = snapshot.docs;
           assert.equal(debates.length, 1);
 
           const debate = debates[0].data();
           assert.equal(debate.pollID, pollID);
           assert.equal(debate.lastMessage, "New Debate!");
-          assert.deepEqual(debate.users, { [USER_ID]: true, [OPPONENT_ID]: true });
+          assert.deepEqual(debate.users, { [USER_ID]: user.data(), [OPPONENT_ID]: opponent.data() });
           return true;
         })
     })

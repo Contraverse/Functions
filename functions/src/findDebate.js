@@ -22,18 +22,17 @@ function _findDebate(userID, pollID, category) {
   const opponentCategory = category ^ 1;
   const db = admin.firestore();
   const queueRef = db.collection(`Polls/${pollID}/Queue${category}`);
-  const opponentRef = db.collection(`Polls/${pollID}/Queue${opponentCategory}`).orderBy('dateCreated').limit(1);
+  const opponentRef = db.collection(`Polls/${pollID}/Queue${opponentCategory}`)
+    .orderBy('dateCreated')
+    .limit(1);
+
   return db.runTransaction(t => {
     let response = null;
     return t.get(opponentRef).then(snapshot => {
       if (!snapshot.empty) {
         const doc = snapshot.docs[0];
-        const opponentID = doc.id;
-        response = { found: true, opponentID };
-        return Promise.all([
-          t.delete(doc.ref),
-          setupChatroom(t, db, userID, opponentID, pollID)
-        ]);
+        response = { found: true, opponentID: doc.id };
+        return setupChatroom(t, db, userID, doc, pollID)
       }
       else {
         response = { found: false };
@@ -45,18 +44,29 @@ function _findDebate(userID, pollID, category) {
   })
 }
 
-function setupChatroom(t, db, userID, opponentID, pollID) {
-  const debate = {
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    lastMessage: "New Debate!",
-    pollID,
-    users: {
-      [userID]: true,
-      [opponentID]: true
-    }
-  };
-  const ref = db.collection('Debates').doc();
-  return t.set(ref, debate);
+function setupChatroom(t, db, userID, doc, pollID) {
+  const opponentID = doc.id;
+  const profiles = db.collection('Profiles');
+  const userRef = profiles.doc(userID);
+  const opponentRef = profiles.doc(opponentID);
+
+  return Promise.all([
+    t.get(userRef),
+    t.get(opponentRef)
+  ]).then(([user, opponent]) => {
+    const debate = {
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastMessage: "New Debate!",
+      pollID,
+      users: {
+        [userID]: user.data(),
+        [opponentID]: opponent.data()
+      }
+    };
+    const ref = db.collection('Debates').doc();
+    t.delete(doc.ref);
+    return t.set(ref, debate);
+  })
 }
 
 module.exports = { findDebate, _findDebate };
