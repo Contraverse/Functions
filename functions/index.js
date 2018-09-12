@@ -1,29 +1,23 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
 const {
-  findDebate,
-  castVote,
+  debate,
+  debates,
   spectate,
-  leaveConversation,
-  createPoll,
   polls,
   likes,
   messages,
   feedback,
-  users
+  users,
+  spectates
 } = require('./src');
 
 admin.initializeApp();
 
-exports.helloWorld = functions.https.onRequest((request, response) => {
-  response.send("Hello from Firebase!");
-});
-
-exports.findDebate = functions.https.onRequest(findDebate);
-exports.castVote = functions.https.onRequest(castVote);
+exports.debate = functions.https.onRequest(debate);
+exports.debates = functions.https.onRequest(debates);
 exports.spectate = functions.https.onRequest(spectate);
-exports.leaveConversation = functions.https.onRequest(leaveConversation);
-exports.createPoll = functions.https.onRequest(createPoll);
+exports.spectates = functions.https.onRequest(spectates);
 exports.polls = functions.https.onRequest(polls);
 exports.likes = functions.https.onRequest(likes);
 exports.messages = functions.https.onRequest(messages);
