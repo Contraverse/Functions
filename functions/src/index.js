@@ -1,7 +1,7 @@
-const { findDebate } = require('./findDebate');
-const { castVote } = require('./castVote');
+const { debate } = require('./debate');
+const { debates } = require('./debates');
 const { spectate } = require('./spectate');
-const leaveConversation = require('./leaveConversation');
+const { spectates } = require('./spectates');
 const { polls } = require('./polls');
 const { likes } = require('./likes');
 const { messages } = require('./messages');
@@ -10,13 +10,13 @@ const { users } = require('./users');
 
 
 module.exports = {
-  findDebate,
-  castVote,
+  debate,
+  debates,
   spectate,
-  leaveConversation,
   polls,
   likes,
   messages,
   feedback,
-  users
+  users,
+  spectates
 };

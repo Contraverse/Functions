@@ -1,23 +1,44 @@
 const admin = require('firebase-admin');
+const { settings } = require('../config/firebase');
+const { getDocuments } = require('./utils/snapshot');
 
-function findDebate(req, res) {
-  const { userID, pollID, category } = req.body;
-  if(userID === undefined)
-    return res.status(400).send('No user ID');
-  if(pollID === undefined)
-    return res.status(400).send('No poll ID');
-  if(category === undefined)
-    return res.status(400).send('No category');
-  return _findDebate(userID, pollID, category)
-    .then(result => {
-      if (result.found)
-        return res.status(200).send(result.opponentID);
-      return res.status(204).send('OK');
-    });
+function debates(req, res) {
+  const { userID } = req.query;
+  if (userID === undefined) {
+    return res.status(400).send('No User ID');
+  }
+
+  if(req.method === 'GET') {
+    return getDebates(userID)
+      .then(result => res.status(200).send(result))
+  }
+  if(req.method === 'POST') {
+    const { pollID, category } = req.body;
+    if(pollID === undefined)
+      return res.status(400).send('No poll ID');
+    if(category === undefined)
+      return res.status(400).send('No category');
+
+    return findDebate(userID, pollID, category)
+      .then(result => {
+        if (result.found)
+          return res.status(200).send(result.opponentID);
+        return res.status(204).send('OK');
+      });
+  }
+
+  return res.status(400).send('Incorrect request method');
+}
+
+function getDebates(userID) {
+  const db = admin.firestore();
+  db.settings(settings);
+  return db.collection('Debates').where(`users.${userID}`, '==', true)
+    .then(snapshot => getDocuments(snapshot));
 }
 
 // TODO: Only works for 2 answer choices. Make more general
-function _findDebate(userID, pollID, category) {
+function findDebate(userID, pollID, category) {
   const opponentCategory = category ^ 1;
   const db = admin.firestore();
   const queueRef = db.collection(`Polls/${pollID}/Queue${category}`);
@@ -68,4 +89,4 @@ function setupChatroom(t, db, userID, doc, pollID) {
   })
 }
 
-module.exports = { findDebate, _findDebate };
+module.exports = { debates, findDebate };

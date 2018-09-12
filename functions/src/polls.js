@@ -16,14 +16,26 @@ function polls(req, res) {
       .then(pollID => res.status(200).send(pollID));
   }
 
+  if(req.method === 'PUT') {
+    const { userID, pollID, answer } = req.body;
+    if(userID === undefined)
+      return res.status(400).send('No user ID');
+    if(pollID === undefined)
+      return res.status(400).send('No poll ID');
+    if(answer === undefined)
+      return res.status(400).send('No answer');
+
+    return castVote(userID, pollID, answer)
+      .then(result => res.status(200).send(result));
+  }
+
   return res.status(400).send('Invalid Status Code');
 }
 
 function getPolls() {
   const db = admin.firestore();
   return db.collection('Polls')
-    .where('pending', '==', false)
-    .orderBy('dateCreated')
+    .where('pending', '==', false).orderBy('dateCreated')
     .get()
     .then(snapshot => {
       return snapshot.docs.map(doc => {
@@ -54,4 +66,24 @@ function createPoll(question, answers) {
   return batch.commit().then(() => pollRef.id);
 }
 
-module.exports = { polls, getPolls };
+function castVote(userID, pollID, answer) {
+  const db = firebase.firestore();
+  const userRef = db.doc(`Profiles/${userID}`);
+  const votesRef = db.doc(`Results/${pollID}`);
+  console.log('Input', userID, pollID, answer);
+  let totalVotes;
+  return db.runTransaction(t => {
+    return t.get(votesRef).then(doc => {
+      totalVotes = doc.data();
+      console.log(totalVotes);
+      totalVotes.counts[answer]++;
+
+      return Promise.all([
+        t.update(votesRef, totalVotes),
+        t.set(userRef.collection('Polls').doc(pollID), { answer })
+      ]);
+    }).then(() => totalVotes)
+  })
+}
+
+module.exports = { polls, getPolls, createPoll, castVote };
