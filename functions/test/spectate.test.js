@@ -43,8 +43,9 @@ describe('Spectate', () => {
     it('should return a valid debate ID', () => {
       return request(api)
         .get(`/polls/${POLL_ID}/spectate`)
-        .expect(200, (err, res) => {
-          assert.equal(res, DOC_ID);
+        .then(res => {
+          assert.equal(res.status, 200);
+          assert.equal(res.text, DOC_ID);
         })
     });
 
@@ -52,7 +53,8 @@ describe('Spectate', () => {
       return request(api)
         .post(`/spectates/${DOC_ID}`)
         .query({ userID: USER_ID })
-        .expect(200, () => {
+        .then(res => {
+          assert.equal(res.status, 200);
           return spectateRef.get()
             .then(doc => assert.isTrue(doc.data().active))
         })
@@ -73,7 +75,8 @@ describe('Spectate', () => {
         return request(api)
           .delete(`/spectates/${DOC_ID}`)
           .query({ userID: USER_ID })
-          .expect(200, () => {
+          .then(res => {
+            assert(res.status, 200);
             return spectateRef.get()
               .then(doc => assert.isFalse(doc.exists));
           })

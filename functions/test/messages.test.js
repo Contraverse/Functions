@@ -1,10 +1,11 @@
-const { assert } = require('chai');
+const { assert, use, request } = require('chai');
 const admin = require('firebase-admin');
-const request = require('supertest');
-const { api } = require('..');
+const chaiHttp = require('chai-http');
+const { api } = require('../index');
 const { removeDocument } = require('./utils');
 
 const { MESSAGES } = require('./testData');
+use(chaiHttp);
 
 describe('Messages', () => {
   const DEBATE_ID = 'FAKE_DEBATE_ID';
@@ -39,12 +40,14 @@ describe('Messages', () => {
       .post(`/debates/${DEBATE_ID}/messages`)
       .send({ messages })
       .set('Accept', 'application/json')
-      .expect(200, () => {
+      .then(res => {
+        assert(res.status, 200);
         return ref.get()
-          .then(() => {
+          .then(snapshot => {
             const result = snapshot.docs.map(doc => doc.data());
             result.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-            assert.deepEqual(result, messages)
+            const target = messages.map(chat => Object.assign({ likes: 0 }, chat));
+            assert.deepEqual(result, target)
           })
       })
   }

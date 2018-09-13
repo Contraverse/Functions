@@ -1,12 +1,13 @@
-const { assert } = require('chai');
+const { assert, use, request } = require('chai');
 const admin = require('firebase-admin');
-const request = require('supertest');
+const chaiHttp = require('chai-http');
 const { api } = require('../index');
 const { createUser } = require('../src/users/methods');
 const { setupChatroom } = require('../src/debates/debates');
 const { removeUser, removeDocument } = require('./utils');
 
 const { USER_ID, OPPONENT_ID, AVATAR, USERNAME } = require('./testData');
+use(chaiHttp);
 
 describe('Debate', () => {
   const POLL_ID = 'FAKE_POLL_ID';
@@ -40,7 +41,8 @@ describe('Debate', () => {
     return request(api)
       .delete(`/debates/${CHAT_ID}`)
       .query({ userID: USER_ID })
-      .expect(200, () => {
+      .then(res => {
+        assert.equal(res.status, 200);
         return REF.get()
           .then(doc => {
             const users = Object.keys(doc.data().users);
@@ -53,7 +55,8 @@ describe('Debate', () => {
     return request(api)
       .delete(`/debates/${CHAT_ID}`)
       .query({ userID: OPPONENT_ID })
-      .expect(200, () => {
+      .then(res => {
+        assert.equal(res.status, 200);
         return REF.get()
           .then(doc => assert.isFalse(doc.exists))
       })

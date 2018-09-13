@@ -1,5 +1,9 @@
 {
   "settings": {
     "timestampsInSnapshots": true
+  },
+  "projectConfig": {
+    "projectId": "controverse-f770c",
+    "databaseURL": "https://controverse-f770c.firebaseio.com"
   }
 }

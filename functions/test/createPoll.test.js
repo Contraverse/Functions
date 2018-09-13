@@ -1,11 +1,11 @@
-const { assert } = require('chai');
-const request = require('supertest');
-const { api } = require('..');
+const { assert, use, request } = require('chai');
+const chaiHttp = require('chai-http');
+const { api } = require('../index');
 const admin = require('firebase-admin');
 const { removePoll } = require('./utils');
 
-const QUESTION = 'What is your favorite color';
-const ANSWERS = ['Red', 'Blue'];
+const { QUESTION, ANSWERS } = require('./testData');
+use(chaiHttp);
 
 describe('Create Poll', () => {
   var pollID;
@@ -18,16 +18,17 @@ describe('Create Poll', () => {
 
   it('should create a poll', () => {
     const db = admin.firestore();
-    const pollRef = db.doc(`Polls/${pollID}`);
-    const resultsRef = db.doc(`Results/${pollID}`);
     const target = Array(ANSWERS.length).fill(0);
 
     return request(api)
       .post('/polls')
       .set('Accept', 'application/json')
       .send({ question: QUESTION, answers: ANSWERS })
-      .expect(200, (err, res) => {
-        pollID = res.pollID;
+      .then(res => {
+        assert.equal(res.status, 200);
+        pollID = res.body.pollID;
+        const pollRef = db.doc(`Polls/${pollID}`);
+        const resultsRef = db.doc(`Results/${pollID}`);
         return pollRef.get()
           .then(doc => {
             const poll = doc.data();

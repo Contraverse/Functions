@@ -1,6 +1,6 @@
-const { assert } = require('chai');
+const { assert, use, request } = require('chai');
 const admin = require('firebase-admin');
-const request = require('supertest');
+const chaiHttp = require('chai-http');
 const { api } = require('../index');
 const { findDebate } = require('../src/debates/debates');
 const { createPoll } = require('../src/polls/methods');
@@ -8,8 +8,9 @@ const { createUser } = require('../src/users/methods');
 const { removePoll, removeUser } = require('./utils');
 
 const { QUESTION, ANSWERS, USER_ID, AVATAR, USERNAME, OPPONENT_ID } = require('./testData');
+use(chaiHttp);
 
-describe('Find Debate', () => {
+describe('Debates', () => {
   var pollID;
   before(() => {
     return Promise.all([
@@ -41,8 +42,8 @@ describe('Find Debate', () => {
       return request(api)
         .post('/debates')
         .query({ pollID, userID: USER_ID, category: answer })
-        .expect(204, (err, res) => {
-          assert.isFalse(res.found);
+        .then(res => {
+          assert.equal(res.status, 204);
           return db.collection(`Polls/${pollID}/Queue${answer}`).get()
             .then(snapshot => {
               console.log();
@@ -50,7 +51,6 @@ describe('Find Debate', () => {
               const queue = snapshot.docs;
               assert.equal(queue.length, 1);
               assert.equal(queue[0].id, USER_ID);
-              return true;
             })
         })
 
@@ -80,9 +80,9 @@ describe('Find Debate', () => {
       const db = admin.firestore();
       return request(api)
         .post('/debates')
-        .query({ pollID, userID: USER_ID, category: opponentAnswer })
-        .expect(200, (err, res) => {
-          assert.isTrue(res.found);
+        .query({ pollID, userID: OPPONENT_ID, category: opponentAnswer })
+        .then(res => {
+          assert.equal(res.status, 200);
           return Promise.all([
             db.collection('Debates').where('pollID', '==', pollID).get(),
             db.doc(`Profiles/${USER_ID}`).get(),

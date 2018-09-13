@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { api } = require('..');
+const { api } = require('../index');
 const { removePoll } = require('./utils');
 const { createPoll } = require('../src/polls/methods');
 

@@ -17,10 +17,10 @@ function handler(app) {
 }
 
 function sendFeedback(message) {
-  const storageRef = admin.storage().ref();
+  const bucket = admin.storage().bucket();
   const uid = createUID();
-  const fileRef = storageRef.child(`feedback/${uid}.txt`);
-  return fileRef.putString(message)
+  const fileRef = bucket.file(`feedback/${uid}.txt`);
+  return fileRef.save(message)
     .then(() => uid);
 }
 

@@ -30,8 +30,10 @@ module.exports = function (app) {
     const { userID, pollID, category } = req.query;
     return findDebate(userID, pollID, category)
       .then(result => {
-        if (result.found)
-          return res.status(200).send(result.opponentID);
+        if (result.found) {
+          const { opponentID, chatID } = result;
+          return res.status(200).send({ opponentID, chatID });
+        }
         return res.status(204).send('OK');
       });
   });

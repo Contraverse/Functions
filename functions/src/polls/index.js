@@ -5,7 +5,7 @@ module.exports = function (app) {
   app.put('/polls/:pollID', [
     param('pollID').exists(),
     query('userID').exists(),
-    query('answer').exists(),
+    query('answer').exists().toInt(),
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

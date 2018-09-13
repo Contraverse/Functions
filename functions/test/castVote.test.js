@@ -1,11 +1,13 @@
-const { assert } = require('chai');
-const request = require('supertest');
-const { api } = require('..');
+const chai = require('chai');
+const chatHttp = require('chai-http');
+const { api } = require('../index');
 const admin = require('firebase-admin');
 const { removePoll, removeUser } = require('./utils');
 const { createPoll } = require('../src/polls/methods');
 
 const { QUESTION, ANSWERS, USER_ID } = require('./testData');
+chai.use(chatHttp);
+const { assert, request } = chai;
 
 describe('Case Vote', () => {
   var pollID;
@@ -33,7 +35,8 @@ describe('Case Vote', () => {
       .put(`/polls/${pollID}`)
       .query({ userID: USER_ID, answer })
       .set('Accept', 'application/json')
-      .expect(200, () => {
+      .then((res) => {
+        assert.equal(res.status, 200);
         return Promise.all([
           userRef.collection('Polls').doc(pollID).get(),
           totalVotesRef.get(),

@@ -38,7 +38,6 @@ function castVote(userID, pollID, answer) {
   const db = admin.firestore();
   const userRef = db.doc(`Profiles/${userID}`);
   const votesRef = db.doc(`Results/${pollID}`);
-  console.log('Input', userID, pollID, answer);
   let totalVotes;
   return db.runTransaction(t => {
     return t.get(votesRef).then(doc => {

@@ -1,8 +1,11 @@
-const { assert } = require('chai');
-const request = require('supertest');
+const chai = require('chai');
+const chaiHttp = require('chai-http');
 const admin = require('firebase-admin');
 const { api } = require('../index');
 const { removeDocument } = require('./utils');
+
+chai.use(chaiHttp);
+const { assert, request } = chai;
 
 describe('Likes', () => {
   const DEBATE_ID = 'FAKE_DEBATE_ID';
@@ -26,16 +29,20 @@ describe('Likes', () => {
     return request(api)
       .post(`/debates/${DEBATE_ID}/likes`)
       .query({ messageID: MESSAGE_ID })
-      .expect(200, () => {
+      .then(res => {
+        assert.equal(res.status, 200);
         return getRef().get()
-          .then(doc => assert.equal(doc.data().likes, 1))
+          .then(doc => assert.equal(doc.data().likes, 1));
       });
   });
 
-  it('should send 422 for without full data', () => {
-    return request(api)
+  it('should send 422 for without full data', done => {
+    request(api)
       .post(`/debates/${DEBATE_ID}/likes`)
-      .expect(422);
+      .end((err, res) => {
+        assert.equal(res.status, 422);
+        done();
+      })
   });
 
   function getRef() {
