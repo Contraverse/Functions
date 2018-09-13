@@ -1,7 +1,8 @@
 const { assert } = require('chai');
+const request = require('supertest');
+const { app } = require('..');
 const admin = require('firebase-admin');
 const { removePoll } = require('./utils');
-const { createPoll } = require('../src/polls');
 
 const QUESTION = 'What is your favorite color';
 const ANSWERS = ['Red', 'Blue'];
@@ -16,12 +17,17 @@ describe('Create Poll', () => {
   });
 
   it('should create a poll', () => {
-    return createPoll(QUESTION, ANSWERS)
-      .then(id => {
-        pollID = id;
-        const db = admin.firestore();
-        const pollRef = db.doc(`Polls/${pollID}`);
-        const resultsRef = db.doc(`Results/${pollID}`);
+    const db = admin.firestore();
+    const pollRef = db.doc(`Polls/${pollID}`);
+    const resultsRef = db.doc(`Results/${pollID}`);
+    const target = Array(ANSWERS.length).fill(0);
+
+    return request(app)
+      .post('/polls')
+      .set('Accept', 'application/json')
+      .send({ question: QUESTION, answers: ANSWERS })
+      .expect(200, (err, res) => {
+        pollID = res.pollID;
         return pollRef.get()
           .then(doc => {
             const poll = doc.data();
@@ -30,7 +36,6 @@ describe('Create Poll', () => {
             assert.deepEqual(poll.answers, ANSWERS);
             return resultsRef.get();
           }).then(doc => {
-            const target = Array(ANSWERS.length).fill(0);
             assert.deepEqual(doc.data().counts, target);
             return true;
           })

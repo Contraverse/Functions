@@ -1,11 +1,19 @@
+const { body, validationResult } = require('express-validator/check');
 const admin = require('firebase-admin');
 
-function feedback(req, res) {
-  const { message } = req.body;
-  if(message === undefined)
-    return res.status(400).send('No message');
-  return sendFeedback(message)
-    .then(res.status(200).send('OK'));
+function handler(app) {
+  app.post('/feedback',
+    body('message').exists(),
+    (req, res) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(422).json({ errors: errors.array() });
+      }
+
+      const { message } = req.body;
+      return sendFeedback(message)
+        .then(() => res.status(200).send('OK'));
+    })
 }
 
 function sendFeedback(message) {
@@ -22,4 +30,4 @@ function createUID() {
     .substring(1);
 }
 
-module.exports = { feedback, sendFeedback };
+module.exports = handler;

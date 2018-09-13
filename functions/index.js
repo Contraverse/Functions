@@ -1,25 +1,16 @@
-const admin = require('firebase-admin');
+const express = require('express');
+const bodyParser = require('body-parser');
 const functions = require('firebase-functions');
-const {
-  debate,
-  debates,
-  spectate,
-  polls,
-  likes,
-  messages,
-  feedback,
-  users,
-  spectates
-} = require('./src');
 
-admin.initializeApp();
+const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+require('./src/debates')(app);
+require('./src/feedback')(app);
+require('./src/likes')(app);
+require('./src/messages')(app);
+require('./src/polls')(app);
+require('./src/spectates')(app);
+require('./src/users')(app);
 
-exports.debate = functions.https.onRequest(debate);
-exports.debates = functions.https.onRequest(debates);
-exports.spectate = functions.https.onRequest(spectate);
-exports.spectates = functions.https.onRequest(spectates);
-exports.polls = functions.https.onRequest(polls);
-exports.likes = functions.https.onRequest(likes);
-exports.messages = functions.https.onRequest(messages);
-exports.feedback = functions.https.onRequest(feedback);
-exports.users = functions.https.onRequest(users);
+exports.api = functions.https.onRequest(app);

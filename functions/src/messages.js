@@ -1,15 +1,23 @@
 const admin = require('firebase-admin');
+const { param, body, validationResult } = require('express-validator/check');
 
-function messages(req, res) {
-  const { debateID } = req.query;
-  const messages = formatMessages(req.body.messages);
-  if(debateID === undefined)
-    return res.status(400).send('No debate ID');
-  if(messages.length === 0)
-    return res.status(400).send('No messages');
+function handler(app) {
+  app.post('/debates/:debateID/messages', [
+    param('debateID').exists(),
+    body('messages').exists()
+      .customSanitizer(messages => formatMessages(messages))
+  ], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).send(errors.array());
+    }
 
-  return sendMessages(debateID, messages)
-    .then(() => res.status(200).send('OK'));
+    const { debateID } = req.params;
+    const { messages } = req.body;
+
+    return sendMessages(debateID, messages)
+      .then(() => res.status(200).send('OK'));
+  })
 }
 
 function sendMessages(debateID, messages) {
@@ -20,7 +28,7 @@ function sendMessages(debateID, messages) {
   messages.forEach(message => {
     message.likes = 0;
     batch.set(messagesRef.doc(), message);
-  })
+  });
   batch.update(chatRef, { lastMessage: messages[messages.length - 1].text });
   return batch.commit();
 }
@@ -33,4 +41,4 @@ function formatMessages(messages) {
   return [messages];
 }
 
-module.exports = { messages, sendMessages };
+module.exports = handler;

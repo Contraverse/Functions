@@ -1,22 +1,5 @@
 const admin = require('firebase-admin');
-const { getDocument } = require('./utils/document');
-
-function debate(req, res) {
-  const { debateID } = req.query;
-  if (debateID === undefined) {
-    return res.status(400).send('No Debate ID')
-  }
-
-  if(req.method === 'GET') {
-    return getDebate(debateID)
-      .then(result => res.status(200).send(result));
-  }
-
-  if(req.method === 'DELETE') {
-    const { userID } = req.query;
-    return leaveDebate(userID, debateID);
-  }
-}
+const { getDocument } = require('../utils/document');
 
 function getDebate(debateID) {
   const db = admin.firestore();
@@ -31,7 +14,7 @@ function leaveDebate(userID, debateID) {
     let debate = null;
     return t.get(debateRef).then(doc => {
       debate = doc.data();
-      debate.users[userID] = false;
+      delete debate.users[userID];
       if (isActive(debate.users)) {
         return t.update(debateRef, debate);
       }
@@ -49,8 +32,7 @@ function deleteDebate(t, ref) {
 }
 
 function isActive(users) {
-  return Object.keys(users).some(userID => users[userID])
+  return Object.keys(users).length > 0;
 }
 
-
-module.exports = { debate, getDebate, leaveDebate };
+module.exports = { getDebate, leaveDebate };

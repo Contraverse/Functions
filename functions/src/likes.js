@@ -1,13 +1,21 @@
 const admin = require('firebase-admin');
+const { param, query, validationResult } = require('express-validator/check');
 
-function likes(req, res) {
-  const { debateID, messageID } = req.query;
-  if(debateID === undefined)
-    return res.status(400).send('No debate ID');
-  if(messageID === undefined)
-    return res.status(400).send('No message ID');
-  return likeMessage(debateID, messageID)
-    .then(() => res.status(200).send('OK'))
+function handler(app) {
+  app.post('/debates/:debateID/likes', [
+    param('debateID').exists(),
+    query('messageID').exists()
+  ], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    const { debateID } = req.params;
+    const { messageID } = req.query;
+    return likeMessage(debateID, messageID)
+      .then(() => res.status(200).send('OK'));
+  })
 }
 
 function likeMessage(debateID, messageID) {
@@ -23,5 +31,5 @@ function likeMessage(debateID, messageID) {
   })
 }
 
-module.exports = { likes, likeMessage };
+module.exports = handler;
 

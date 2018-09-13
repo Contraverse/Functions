@@ -1,34 +1,6 @@
 const admin = require('firebase-admin');
-const { settings } = require('../config/firebase');
-const { getDocuments } = require('./utils/snapshot');
-
-function debates(req, res) {
-  const { userID } = req.query;
-  if (userID === undefined) {
-    return res.status(400).send('No User ID');
-  }
-
-  if(req.method === 'GET') {
-    return getDebates(userID)
-      .then(result => res.status(200).send(result))
-  }
-  if(req.method === 'POST') {
-    const { pollID, category } = req.body;
-    if(pollID === undefined)
-      return res.status(400).send('No poll ID');
-    if(category === undefined)
-      return res.status(400).send('No category');
-
-    return findDebate(userID, pollID, category)
-      .then(result => {
-        if (result.found)
-          return res.status(200).send(result.opponentID);
-        return res.status(204).send('OK');
-      });
-  }
-
-  return res.status(400).send('Incorrect request method');
-}
+const { settings } = require('../../config/firebase');
+const { getDocuments } = require('../utils/snapshot');
 
 function getDebates(userID) {
   const db = admin.firestore();
@@ -52,7 +24,8 @@ function findDebate(userID, pollID, category) {
       if (!snapshot.empty) {
         const doc = snapshot.docs[0];
         response = { found: true, opponentID: doc.id };
-        return setupChatroom(t, db, userID, doc, pollID)
+        return setupChatroom(t, db, userID, doc.id, pollID, response)
+          .then(() => t.delete(doc.ref));
       }
       else {
         response = { found: false };
@@ -64,8 +37,7 @@ function findDebate(userID, pollID, category) {
   })
 }
 
-function setupChatroom(t, db, userID, doc, pollID) {
-  const opponentID = doc.id;
+function setupChatroom(t, db, userID, opponentID, pollID, response) {
   const profiles = db.collection('Profiles');
   const userRef = profiles.doc(userID);
   const opponentRef = profiles.doc(opponentID);
@@ -84,9 +56,9 @@ function setupChatroom(t, db, userID, doc, pollID) {
       }
     };
     const ref = db.collection('Debates').doc();
-    t.delete(doc.ref);
+    response.chatID = ref.id;
     return t.set(ref, debate);
   })
 }
 
-module.exports = { debates, findDebate };
+module.exports = { getDebates, findDebate, setupChatroom };

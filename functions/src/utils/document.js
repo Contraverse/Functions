@@ -1,8 +1,6 @@
 function getDocument(doc) {
-  return {
-    docID: doc.id,
-    ...doc.data()
-  }
+  return Object.assign({ docID: doc.id }, doc.data())
+
 }
 
 module.exports = { getDocument };

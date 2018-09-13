@@ -1,8 +1,7 @@
-const { assert } = require('chai');
+const request = require('supertest');
+const { app } = require('..');
 const { removePoll } = require('./utils');
-
-const { getPolls } = require('../src/polls');
-const { createPoll } = require('../src/polls');
+const { createPoll } = require('../src/polls/methods');
 
 const { QUESTION, ANSWERS } = require('./testData');
 
@@ -11,19 +10,15 @@ describe('Get Polls', () => {
   before(() => {
     return createPoll(QUESTION, ANSWERS)
       .then(id => POLL_ID = id);
-  })
+  });
 
   after(() => {
     return removePoll(POLL_ID);
-  })
+  });
 
   it('should get polls', () => {
-    return getPolls();
+    return request(app)
+      .get('/polls')
+      .expect(200)
   })
-
-  // describe('HTTP', () => {
-  //   it('should get polls', () => {
-  //
-  //   })
-  // })
-})
+});

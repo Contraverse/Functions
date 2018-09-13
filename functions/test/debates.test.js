@@ -1,8 +1,10 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
-const findDebate = require('../src/findDebate')._findDebate;
-const { createPoll } = require('../src/polls');
-const { createUser } = require('../src/users');
+const request = require('supertest');
+const { app } = require('../index');
+const { findDebate } = require('../src/debates/debates');
+const { createPoll } = require('../src/polls/methods');
+const { createUser } = require('../src/users/methods');
 const { removePoll, removeUser } = require('./utils');
 
 const { QUESTION, ANSWERS, USER_ID, AVATAR, USERNAME, OPPONENT_ID } = require('./testData');
@@ -35,22 +37,34 @@ describe('Find Debate', () => {
 
     it('should add a user to the queue', () => {
       const db = admin.firestore();
-      return findDebate(USER_ID, pollID, answer)
-        .then(({ found }) => {
-          assert.isFalse(found);
+
+      return request(app)
+        .post('/debates')
+        .query({ pollID, userID: USER_ID, category: answer })
+        .expect(204, (err, res) => {
+          assert.isFalse(res.found);
           return db.collection(`Polls/${pollID}/Queue${answer}`).get()
-        }).then(snapshot => {
-          const queue = snapshot.docs;
-          assert.equal(queue.length, 1);
-          assert.equal(queue[0].id, USER_ID);
-          return true;
+            .then(snapshot => {
+              console.log();
+
+              const queue = snapshot.docs;
+              assert.equal(queue.length, 1);
+              assert.equal(queue[0].id, USER_ID);
+              return true;
+            })
         })
+
     })
   });
 
   describe('Test Debate Room', () => {
     var answer = 0;
     var opponentAnswer = 1;
+
+    before(() => {
+      return findDebate(USER_ID, pollID, answer);
+    });
+
     after(() => {
       const db = admin.firestore();
       return db.collection('Debates')
@@ -64,24 +78,25 @@ describe('Find Debate', () => {
 
     it('should create a debate room', () => {
       const db = admin.firestore();
-      return findDebate(USER_ID, pollID, answer)
-        .then(() => findDebate(OPPONENT_ID, pollID, opponentAnswer))
-        .then(({ found }) => {
-          assert.isTrue(found);
+      return request(app)
+        .post('/debates')
+        .query({ pollID, userID: USER_ID, category: opponentAnswer })
+        .expect(200, (err, res) => {
+          assert.isTrue(res.found);
           return Promise.all([
             db.collection('Debates').where('pollID', '==', pollID).get(),
             db.doc(`Profiles/${USER_ID}`).get(),
             db.doc(`Profiles/${OPPONENT_ID}`).get()
-          ]);
-        }).then(([snapshot, user, opponent]) => {
-          const debates = snapshot.docs;
-          assert.equal(debates.length, 1);
+          ]).then(([snapshot, user, opponent]) => {
+            const debates = snapshot.docs;
+            assert.equal(debates.length, 1);
 
-          const debate = debates[0].data();
-          assert.equal(debate.pollID, pollID);
-          assert.equal(debate.lastMessage, "New Debate!");
-          assert.deepEqual(debate.users, { [USER_ID]: user.data(), [OPPONENT_ID]: opponent.data() });
-          return true;
+            const debate = debates[0].data();
+            assert.equal(debate.pollID, pollID);
+            assert.equal(debate.lastMessage, "New Debate!");
+            assert.deepEqual(debate.users, { [USER_ID]: user.data(), [OPPONENT_ID]: opponent.data() });
+            return true;
+          });
         })
     })
   })

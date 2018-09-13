@@ -1,7 +1,8 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
+const request = require('supertest');
+const { app } = require('../index');
 const { removeDocument } = require('./utils');
-const { getSpectate, setSpectate, removeSpectate } = require('../src/spectate');
 
 const { USER_ID } = require('./testData');
 
@@ -10,21 +11,23 @@ describe('Spectate', () => {
 
   describe('Test without active debate', () => {
     it('should not find a spectate', () => {
-      return getSpectate(USER_ID, POLL_ID)
-        .then(result => {
-          assert.isNull(result);
-          return true;
-        })
+      return request(app)
+        .get('/spectates')
+        .query({ userID: USER_ID, pollID: POLL_ID })
+        .expect(204);
     })
   });
 
   describe('Test with an active debate', () => {
-    var DOC_ID;
+    var DOC_ID, spectateRef;
     before(() => {
-      const doc = admin.firestore()
-        .collection('Debates').doc();
+      const db = admin.firestore();
+      const doc = db.collection('Debates').doc();
       return doc.set({ pollID: POLL_ID })
-        .then(() => DOC_ID = doc.id);
+        .then(() => {
+          DOC_ID = doc.id;
+          spectateRef = db.doc(`Profiles/${USER_ID}/Spectates/${DOC_ID}`);
+        });
     });
 
     after(() => {
@@ -33,37 +36,50 @@ describe('Spectate', () => {
       const userRef = db.doc(`Profiles/${USER_ID}`);
       return Promise.all([
         removeDocument(debateRef),
-        removeDocument(userRef)
+        removeDocument(userRef),
+        removeDocument(spectateRef),
       ])
     });
 
     it('should return a valid debate ID', () => {
-      return getSpectate(USER_ID, POLL_ID)
-        .then(result => {
-          assert.equal(result, DOC_ID);
-          return true;
+      return request(app)
+        .get('/spectates')
+        .query({ userID: USER_ID, pollID: POLL_ID })
+        .expect(200, (err, res) => {
+          assert.equal(res, DOC_ID);
         })
     });
 
     it('should subscribe to a debate', () => {
-      const spectateRef = admin.firestore()
-        .doc(`Profiles/${USER_ID}/Spectates/${DOC_ID}`);
-      return setSpectate(USER_ID, DOC_ID)
-        .then(() => spectateRef.get())
-        // Assert
-        .then(doc => assert.isTrue(doc.data().active));
-    })
+      return request(app)
+        .post(`/spectates/${DOC_ID}`)
+        .query({ userID: USER_ID })
+        .expect(200, () => {
+          return spectateRef.get()
+            .then(doc => assert.isTrue(doc.data().active))
+        })
+    });
 
-    it('should unsubscribe to a debate', () => {
-      // Arrange
-      const spectateRef = admin.firestore()
-        .doc(`Profiles/${USER_ID}/Spectates/${DOC_ID}`);
-      // Act
-      return spectateRef.set({ active: true })
-        .then(() => removeSpectate(USER_ID, DOC_ID))
-        .then(() => spectateRef.get())
-        // Assert
-        .then(doc => assert.isFalse(doc.exists));
+    it('should return 422 on incomplete subscribe request', () => {
+      return request(app)
+        .post(`/spectates/${DOC_ID}`)
+        .expect(422)
+    });
+
+    describe('Unsubscribe', () => {
+      before(() => {
+        return spectateRef.set({ active: true })
+      });
+
+      it('should unsubscribe to a debate', () => {
+        return request(app)
+          .delete(`/spectates/${DOC_ID}`)
+          .query({ userID: USER_ID })
+          .expect(200, () => {
+            return spectateRef.get()
+              .then(doc => assert.isFalse(doc.exists));
+          })
+      })
     })
   })
 });
