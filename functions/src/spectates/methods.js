@@ -1,6 +1,6 @@
 const admin = require('firebase-admin');
 
-function getSpectate(userID, pollID) {
+function getSpectate(pollID) {
   const db = admin.firestore();
   const query = db.collection('Debates').where('pollID', '==', pollID);
   return query.get().then(snapshot => {

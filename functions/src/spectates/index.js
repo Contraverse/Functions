@@ -2,17 +2,16 @@ const { query, param, validationResult } = require('express-validator/check');
 const { getSpectate, setSpectate, removeSpectate } = require('./methods');
 
 module.exports = function (app) {
-  app.get('/spectates', [
-    query('userID').exists(),
-    query('pollID').exists()
+  app.get('/polls/:pollID/spectate', [
+    param('pollID').exists()
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
 
-    const { userID, pollID } = req.query;
-    return getSpectate(userID, pollID)
+    const { pollID } = req.params;
+    return getSpectate(pollID)
       .then(spectateID => {
         if (spectateID)
           return res.status(200).send(spectateID);

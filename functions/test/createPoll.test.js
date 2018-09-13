@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 const request = require('supertest');
-const { app } = require('..');
+const { api } = require('..');
 const admin = require('firebase-admin');
 const { removePoll } = require('./utils');
 
@@ -22,7 +22,7 @@ describe('Create Poll', () => {
     const resultsRef = db.doc(`Results/${pollID}`);
     const target = Array(ANSWERS.length).fill(0);
 
-    return request(app)
+    return request(api)
       .post('/polls')
       .set('Accept', 'application/json')
       .send({ question: QUESTION, answers: ANSWERS })

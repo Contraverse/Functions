@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 const request = require('supertest');
-const { app } = require('..');
+const { api } = require('..');
 const admin = require('firebase-admin');
 const { removePoll, removeUser } = require('./utils');
 const { createPoll } = require('../src/polls/methods');
@@ -29,7 +29,7 @@ describe('Case Vote', () => {
     const totalVotesRef = db.doc(`Results/${pollID}`);
     const targetVotes = [1, 0];
 
-    return request(app)
+    return request(api)
       .put(`/polls/${pollID}`)
       .query({ userID: USER_ID, answer })
       .set('Accept', 'application/json')

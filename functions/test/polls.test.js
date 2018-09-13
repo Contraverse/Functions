@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { app } = require('..');
+const { api } = require('..');
 const { removePoll } = require('./utils');
 const { createPoll } = require('../src/polls/methods');
 
@@ -17,7 +17,7 @@ describe('Get Polls', () => {
   });
 
   it('should get polls', () => {
-    return request(app)
+    return request(api)
       .get('/polls')
       .expect(200)
   })

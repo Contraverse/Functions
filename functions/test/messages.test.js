@@ -1,7 +1,7 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
 const request = require('supertest');
-const { app } = require('..');
+const { api } = require('..');
 const { removeDocument } = require('./utils');
 
 const { MESSAGES } = require('./testData');
@@ -35,7 +35,7 @@ describe('Messages', () => {
   function testSendMessage(messages) {
     const ref = admin.firestore()
       .collection(`Debates/${DEBATE_ID}/Messages`);
-    return request(app)
+    return request(api)
       .post(`/debates/${DEBATE_ID}/messages`)
       .send({ messages })
       .set('Accept', 'application/json')

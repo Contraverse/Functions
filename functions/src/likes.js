@@ -14,20 +14,22 @@ function handler(app) {
     const { debateID } = req.params;
     const { messageID } = req.query;
     return likeMessage(debateID, messageID)
-      .then(() => res.status(200).send('OK'));
+      .then(likes => res.status(200).send({ likes }));
   })
 }
 
 function likeMessage(debateID, messageID) {
   const db = admin.firestore();
   const messageRef = db.doc(`Debates/${debateID}/Messages/${messageID}`);
+  let result = null;
   return db.runTransaction(t => {
     return t.get(messageRef)
       .then(doc => {
         const message = doc.data();
-        message.likes = (message.likes || 0) + 1;
+        result = message.likes = (message.likes || 0) + 1;
         return t.set(messageRef, message);
       })
+      .then(() => result)
   })
 }
 

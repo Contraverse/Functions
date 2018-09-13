@@ -9,7 +9,7 @@ function getPolls() {
       return snapshot.docs.map(doc => {
         const { title, answers } = doc.data();
         return {
-          id: doc.id,
+          docID: doc.id,
           question: title,
           answers
         }

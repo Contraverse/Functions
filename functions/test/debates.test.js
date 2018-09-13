@@ -1,7 +1,7 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
 const request = require('supertest');
-const { app } = require('../index');
+const { api } = require('../index');
 const { findDebate } = require('../src/debates/debates');
 const { createPoll } = require('../src/polls/methods');
 const { createUser } = require('../src/users/methods');
@@ -38,7 +38,7 @@ describe('Find Debate', () => {
     it('should add a user to the queue', () => {
       const db = admin.firestore();
 
-      return request(app)
+      return request(api)
         .post('/debates')
         .query({ pollID, userID: USER_ID, category: answer })
         .expect(204, (err, res) => {
@@ -78,7 +78,7 @@ describe('Find Debate', () => {
 
     it('should create a debate room', () => {
       const db = admin.firestore();
-      return request(app)
+      return request(api)
         .post('/debates')
         .query({ pollID, userID: USER_ID, category: opponentAnswer })
         .expect(200, (err, res) => {

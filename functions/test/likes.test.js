@@ -1,7 +1,7 @@
 const { assert } = require('chai');
 const request = require('supertest');
 const admin = require('firebase-admin');
-const { app } = require('../index');
+const { api } = require('../index');
 const { removeDocument } = require('./utils');
 
 describe('Likes', () => {
@@ -23,7 +23,7 @@ describe('Likes', () => {
   });
 
   it('should like a message', () => {
-    return request(app)
+    return request(api)
       .post(`/debates/${DEBATE_ID}/likes`)
       .query({ messageID: MESSAGE_ID })
       .expect(200, () => {
@@ -33,7 +33,7 @@ describe('Likes', () => {
   });
 
   it('should send 422 for without full data', () => {
-    return request(app)
+    return request(api)
       .post(`/debates/${DEBATE_ID}/likes`)
       .expect(422);
   });

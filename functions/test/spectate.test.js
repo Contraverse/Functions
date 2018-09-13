@@ -1,7 +1,7 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
 const request = require('supertest');
-const { app } = require('../index');
+const { api } = require('../index');
 const { removeDocument } = require('./utils');
 
 const { USER_ID } = require('./testData');
@@ -11,9 +11,8 @@ describe('Spectate', () => {
 
   describe('Test without active debate', () => {
     it('should not find a spectate', () => {
-      return request(app)
-        .get('/spectates')
-        .query({ userID: USER_ID, pollID: POLL_ID })
+      return request(api)
+        .get(`/polls/${POLL_ID}/spectate`)
         .expect(204);
     })
   });
@@ -42,16 +41,15 @@ describe('Spectate', () => {
     });
 
     it('should return a valid debate ID', () => {
-      return request(app)
-        .get('/spectates')
-        .query({ userID: USER_ID, pollID: POLL_ID })
+      return request(api)
+        .get(`/polls/${POLL_ID}/spectate`)
         .expect(200, (err, res) => {
           assert.equal(res, DOC_ID);
         })
     });
 
     it('should subscribe to a debate', () => {
-      return request(app)
+      return request(api)
         .post(`/spectates/${DOC_ID}`)
         .query({ userID: USER_ID })
         .expect(200, () => {
@@ -61,7 +59,7 @@ describe('Spectate', () => {
     });
 
     it('should return 422 on incomplete subscribe request', () => {
-      return request(app)
+      return request(api)
         .post(`/spectates/${DOC_ID}`)
         .expect(422)
     });
@@ -72,7 +70,7 @@ describe('Spectate', () => {
       });
 
       it('should unsubscribe to a debate', () => {
-        return request(app)
+        return request(api)
           .delete(`/spectates/${DOC_ID}`)
           .query({ userID: USER_ID })
           .expect(200, () => {

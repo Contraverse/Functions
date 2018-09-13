@@ -1,7 +1,7 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
 const request = require('supertest');
-const { app } = require('../index');
+const { api } = require('../index');
 const { createUser } = require('../src/users/methods');
 const { setupChatroom } = require('../src/debates/debates');
 const { removeUser, removeDocument } = require('./utils');
@@ -37,7 +37,7 @@ describe('Debate', () => {
   });
 
   it('should leave the debate', () => {
-    return request(app)
+    return request(api)
       .delete(`/debates/${CHAT_ID}`)
       .query({ userID: USER_ID })
       .expect(200, () => {
@@ -50,7 +50,7 @@ describe('Debate', () => {
   });
 
   it('should delete the empty room', () => {
-    return request(app)
+    return request(api)
       .delete(`/debates/${CHAT_ID}`)
       .query({ userID: OPPONENT_ID })
       .expect(200, () => {
