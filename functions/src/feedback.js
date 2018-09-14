@@ -12,7 +12,7 @@ function handler(app) {
 
       const { message } = req.body;
       return sendFeedback(message)
-        .then(() => res.status(200).send('OK'));
+        .then(uid => res.status(200).json({ uid }));
     })
 }
 

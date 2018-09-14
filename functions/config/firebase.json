@@ -4,6 +4,7 @@
   },
   "projectConfig": {
     "projectId": "controverse-f770c",
-    "databaseURL": "https://controverse-f770c.firebaseio.com"
+    "databaseURL": "https://controverse-f770c.firebaseio.com",
+    "storageBucket": "gs://controverse-f770c.appspot.com"
   }
 }
