@@ -45,7 +45,7 @@ describe('Spectate', () => {
         .get(`/polls/${POLL_ID}/spectate`)
         .then(res => {
           assert.equal(res.status, 200);
-          assert.equal(res.text, DOC_ID);
+          assert.equal(res.body.spectateID, DOC_ID);
         })
     });
 

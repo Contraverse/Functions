@@ -46,8 +46,6 @@ describe('Debates', () => {
           assert.equal(res.status, 204);
           return db.collection(`Polls/${pollID}/Queue${answer}`).get()
             .then(snapshot => {
-              console.log();
-
               const queue = snapshot.docs;
               assert.equal(queue.length, 1);
               assert.equal(queue[0].id, USER_ID);

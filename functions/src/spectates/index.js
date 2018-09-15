@@ -14,7 +14,7 @@ module.exports = function (app) {
     return getSpectate(pollID)
       .then(spectateID => {
         if (spectateID)
-          return res.status(200).send(spectateID);
+          return res.status(200).json({ spectateID });
         return res.status(204).send('Spectate not found');
       });
   });
