@@ -1,9 +1,11 @@
-const request = require('supertest');
-const { api } = require('../index');
+const { assert, use, request } = require('chai');
+const chaiHttp = require('chai-http');
+const { api } = require('..');
 const { removePoll } = require('./utils');
 const { createPoll } = require('../src/polls/methods');
 
 const { QUESTION, ANSWERS } = require('./testData');
+use(chaiHttp);
 
 describe('Get Polls', () => {
   var POLL_ID;
@@ -19,6 +21,8 @@ describe('Get Polls', () => {
   it('should get polls', () => {
     return request(api)
       .get('/polls')
-      .expect(200)
+      .then(res => {
+        assert.equal(res.status, 200);
+      })
   })
 });
