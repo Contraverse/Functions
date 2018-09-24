@@ -3,7 +3,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const functions = require('firebase-functions');
 const { projectConfig } = require('./config/firebase');
+const auth = require('./config/auth');
 
+projectConfig.credential = admin.credential.cert(auth);
 admin.initializeApp(projectConfig);
 
 const app = express();

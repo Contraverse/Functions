@@ -76,6 +76,7 @@ describe('Debates', () => {
 
     it('should create a debate room', () => {
       const db = admin.firestore();
+      const profiles = db.collection('Profiles');
       return request(api)
         .post('/debates')
         .query({ pollID, userID: OPPONENT_ID, category: opponentAnswer })
@@ -83,8 +84,8 @@ describe('Debates', () => {
           assert.equal(res.status, 200);
           return Promise.all([
             db.collection('Debates').where('pollID', '==', pollID).get(),
-            db.doc(`Profiles/${USER_ID}`).get(),
-            db.doc(`Profiles/${OPPONENT_ID}`).get()
+            profiles.doc(USER_ID).get(),
+            profiles.doc(OPPONENT_ID).get()
           ]).then(([snapshot, user, opponent]) => {
             const debates = snapshot.docs;
             assert.equal(debates.length, 1);

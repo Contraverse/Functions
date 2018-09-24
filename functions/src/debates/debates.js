@@ -11,6 +11,7 @@ function getDebates(userID) {
 
 // TODO: Only works for 2 answer choices. Make more general
 function findDebate(userID, pollID, category) {
+  console.log('Find Debate params: ', userID, pollID, category);
   const opponentCategory = category ^ 1;
   const db = admin.firestore();
   const queueRef = db.collection(`Polls/${pollID}/Queue${category}`);
@@ -38,6 +39,7 @@ function findDebate(userID, pollID, category) {
 }
 
 function setupChatroom(t, db, userID, opponentID, pollID, response) {
+  console.log('Setup Chatroom params: ', userID, opponentID, pollID, response);
   const profiles = db.collection('Profiles');
   const userRef = profiles.doc(userID);
   const opponentRef = profiles.doc(opponentID);
@@ -48,13 +50,14 @@ function setupChatroom(t, db, userID, opponentID, pollID, response) {
   ]).then(([user, opponent]) => {
     const debate = {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      lastMessage: "New Debate!",
+      lastMessage: 'New Debate!',
       pollID,
       users: {
         [userID]: user.data(),
         [opponentID]: opponent.data()
       }
     };
+    console.log('Setup Chatroom Debate Object: ', debate);
     const ref = db.collection('Debates').doc();
     response.chatID = ref.id;
     return t.set(ref, debate);
