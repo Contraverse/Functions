@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 function getPolls() {
   const db = admin.firestore();
   return db.collection('Polls')
-    .where('pending', '==', false).orderBy('dateCreated')
+    .where('pending', '==', false).orderBy('dateCreated', 'desc')
     .get()
     .then(snapshot => {
       return snapshot.docs.map(doc => {
