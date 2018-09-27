@@ -19,4 +19,16 @@ function updateUser(userID, avatar, username) {
   return db.doc(`Profiles/${userID}`).update(doc)
 }
 
-module.exports = { createUser, updateUser };
+function getRandomAvatar() {
+  const db = admin.firestore();
+  const ref = db.collection('Avatars');
+  return ref.get()
+    .then(snapshot => {
+      const avatars = snapshot.docs;
+      const index = Math.floor(Math.random() * avatars.length);
+
+      return avatars[index].data().source;
+    })
+}
+
+module.exports = { createUser, updateUser, getRandomAvatar };
