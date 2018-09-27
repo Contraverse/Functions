@@ -98,5 +98,18 @@ describe('Debates', () => {
           });
         })
     })
+  });
+
+  describe('Test Errors', () => {
+    const answer = 0, fakeUserID = 'FAKE_USER_ID';
+
+    it('should return an error with invalid userID', () => {
+      return request(api)
+        .post('/debates')
+        .query({ pollID, userID: fakeUserID, category: answer })
+        .then(res => {
+          assert.equal(res.status, 422);
+        })
+    })
   })
 });

@@ -1,6 +1,7 @@
 const { query, param, validationResult } = require('express-validator/check');
 const { getDebates, findDebate } = require('./debates');
 const { getDebate, leaveDebate } = require('./debate');
+const { isValidUser } = require('../validators/user');
 
 module.exports = function (app) {
   app.get('/debates',
@@ -18,7 +19,7 @@ module.exports = function (app) {
     });
 
   app.post('/debates', [
-    query('userID').exists(),
+    query('userID').exists().custom(isValidUser),
     query('pollID').exists(),
     query('category').exists()
   ], (req, res) => {
