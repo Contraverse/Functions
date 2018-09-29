@@ -24,9 +24,13 @@ function findDebate(userID, pollID, category) {
     return t.get(opponentRef).then(snapshot => {
       if (!snapshot.empty) {
         const doc = snapshot.docs[0];
-        response = { found: true, opponentID: doc.id };
-        return setupChatroom(t, db, userID, doc.id, pollID, response)
-          .then(() => t.delete(doc.ref));
+        const opponentID = doc.id;
+        response = { found: true, opponentID };
+        return setupChatroom(t, db, userID, opponentID, pollID)
+          .then(chatID => {
+            response.chatID = chatID;
+            return t.delete(doc.ref)
+          });
       }
       else {
         response = { found: false };
@@ -38,8 +42,8 @@ function findDebate(userID, pollID, category) {
   })
 }
 
-function setupChatroom(t, db, userID, opponentID, pollID, response) {
-  console.log('Setup Chatroom params: ', userID, opponentID, pollID, response);
+function setupChatroom(t, db, userID, opponentID, pollID) {
+  console.log('Setup Chatroom params: ', userID, opponentID, pollID);
   const profiles = db.collection('Profiles');
   const userRef = profiles.doc(userID);
   const opponentRef = profiles.doc(opponentID);
@@ -48,20 +52,27 @@ function setupChatroom(t, db, userID, opponentID, pollID, response) {
     t.get(userRef),
     t.get(opponentRef)
   ]).then(([user, opponent]) => {
-    const debate = {
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      lastMessage: 'New Debate!',
-      pollID,
-      users: {
-        [userID]: user.data(),
-        [opponentID]: opponent.data()
-      }
-    };
+    const debate = createDebateDoc(pollID, user, opponent);
+
     console.log('Setup Chatroom Debate Object: ', debate);
     const ref = db.collection('Debates').doc();
-    response.chatID = ref.id;
-    return t.set(ref, debate);
+    t.set(ref, debate);
+    return ref.id;
   })
+}
+
+function createDebateDoc(pollID, user, opponent) {
+  const users = {
+    [user.id]: user.data(),
+    [opponent.id]: opponent.data()
+  };
+
+  return {
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastMessage: 'New Debate!',
+    pollID,
+    users
+  };
 }
 
 module.exports = { getDebates, findDebate, setupChatroom };

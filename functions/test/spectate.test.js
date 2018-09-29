@@ -1,13 +1,21 @@
 const { assert } = require('chai');
 const admin = require('firebase-admin');
 const request = require('supertest');
-const { api } = require('../index');
-const { removeDocument } = require('./utils');
+const { api } = require('..');
+const { createDocument, removeDocument, removePoll } = require('./utils');
 
 const { USER_ID } = require('./testData');
 
 describe('Spectate', () => {
   var POLL_ID = 'FAKE_POLL_ID';
+
+  before(() => {
+    return createDocument(`Polls/${POLL_ID}`);
+  });
+
+  after(() => {
+    return removePoll(POLL_ID);
+  });
 
   describe('Test without active debate', () => {
     it('should not find a spectate', () => {
@@ -21,21 +29,23 @@ describe('Spectate', () => {
     var DOC_ID, spectateRef;
     before(() => {
       const db = admin.firestore();
+      const batch = db.batch();
+
       const doc = db.collection('Debates').doc();
-      return doc.set({ pollID: POLL_ID })
-        .then(() => {
-          DOC_ID = doc.id;
-          spectateRef = db.doc(`Profiles/${USER_ID}/Spectates/${DOC_ID}`);
-        });
+      DOC_ID = doc.id;
+      spectateRef = db.doc(`Profiles/${USER_ID}/Spectates/${DOC_ID}`);
+      batch.set(doc, { pollID: POLL_ID });
+
+      createDocument(batch, `Profiles/${USER_ID}`);
+
+      return batch.commit();
     });
 
     after(() => {
       const db = admin.firestore();
       const debateRef = db.doc(`Debates/${DOC_ID}`);
-      const userRef = db.doc(`Profiles/${USER_ID}`);
       return Promise.all([
         removeDocument(debateRef),
-        removeDocument(userRef),
         removeDocument(spectateRef),
       ])
     });

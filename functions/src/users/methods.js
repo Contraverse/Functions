@@ -31,4 +31,10 @@ function getRandomAvatar() {
     })
 }
 
-module.exports = { createUser, updateUser, getRandomAvatar };
+function updateToken(userID, token) {
+  return admin.firestore()
+    .doc(`Tokens/${userID}`)
+    .set({ token });
+}
+
+module.exports = { createUser, updateUser, getRandomAvatar, updateToken };

@@ -1,10 +1,11 @@
 const { param, query, body, validationResult } = require('express-validator/check');
 const { castVote, getPolls, createPoll } = require('./methods');
+const { isValidUser, isValidPoll } = require('../validators');
 
 module.exports = function (app) {
   app.put('/polls/:pollID', [
-    param('pollID').exists(),
-    query('userID').exists(),
+    param('pollID').exists().custom(isValidPoll),
+    query('userID').exists().custom(isValidUser),
     query('answer').exists().toInt(),
   ], (req, res) => {
     const errors = validationResult(req);

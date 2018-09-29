@@ -1,28 +1,28 @@
 const { assert, use, request } = require('chai');
 const admin = require('firebase-admin');
 const chaiHttp = require('chai-http');
-const { api } = require('../index');
+const { api } = require('..');
 const { findDebate } = require('../src/debates/debates');
 const { createPoll } = require('../src/polls/methods');
 const { createUser } = require('../src/users/methods');
-const { removePoll, removeUser } = require('./utils');
+const { createDocument, removePoll, removeUser } = require('./utils');
 
 const { QUESTION, ANSWERS, USER_ID, AVATAR, USERNAME, OPPONENT_ID } = require('./testData');
 use(chaiHttp);
 
 describe('Debates', () => {
-  var pollID;
+  var POLL_ID;
   before(() => {
     return Promise.all([
       createPoll(QUESTION, ANSWERS),
       createUser(USER_ID, AVATAR, USERNAME),
       createUser(OPPONENT_ID, AVATAR, USERNAME),
-    ]).then(results => pollID = results[0]);
+    ]).then(results => POLL_ID = results[0]);
   });
 
   after(() => {
     return Promise.all([
-      removePoll(pollID),
+      removePoll(POLL_ID),
       removeUser(USER_ID),
       removeUser(OPPONENT_ID)
     ]);
@@ -32,7 +32,7 @@ describe('Debates', () => {
     var answer = 0;
     after(() => {
       return admin.firestore()
-        .doc(`Polls/${pollID}/Queue${answer}/${USER_ID}`)
+        .doc(`Polls/${POLL_ID}/Queue${answer}/${USER_ID}`)
         .delete();
     });
 
@@ -41,10 +41,10 @@ describe('Debates', () => {
 
       return request(api)
         .post('/debates')
-        .query({ pollID, userID: USER_ID, category: answer })
+        .query({ pollID: POLL_ID, userID: USER_ID, category: answer })
         .then(res => {
           assert.equal(res.status, 204);
-          return db.collection(`Polls/${pollID}/Queue${answer}`).get()
+          return db.collection(`Polls/${POLL_ID}/Queue${answer}`).get()
             .then(snapshot => {
               const queue = snapshot.docs;
               assert.equal(queue.length, 1);
@@ -60,15 +60,27 @@ describe('Debates', () => {
     var opponentAnswer = 1;
 
     before(() => {
-      return findDebate(USER_ID, pollID, answer);
+      const db = admin.firestore();
+      const batch = db.batch();
+      createDocument(batch, `Profiles/${USER_ID}`);
+      createDocument(batch, `Profiles/${OPPONENT_ID}`);
+      batch.set(db.doc(`Polls/${POLL_ID}`), { question: QUESTION, answers: ANSWERS });
+
+      return Promise.all([
+        findDebate(USER_ID, POLL_ID, answer),
+        batch.commit()
+      ]);
     });
 
     after(() => {
       const db = admin.firestore();
+      const batch = db.batch();
+      batch.delete(db.doc(`Profiles/${USER_ID}`));
+      batch.delete(db.doc(`Profiles/${OPPONENT_ID}`));
+      batch.delete(db.doc(`Polls/${POLL_ID}`));
       return db.collection('Debates')
-        .where('pollID', '==', pollID).get()
+        .where('pollID', '==', POLL_ID).get()
         .then(snapshot => {
-          const batch = db.batch();
           snapshot.forEach(doc => batch.delete(doc.ref));
           return batch.commit();
         })
@@ -79,11 +91,11 @@ describe('Debates', () => {
       const profiles = db.collection('Profiles');
       return request(api)
         .post('/debates')
-        .query({ pollID, userID: OPPONENT_ID, category: opponentAnswer })
+        .query({ pollID: POLL_ID, userID: OPPONENT_ID, category: opponentAnswer })
         .then(res => {
           assert.equal(res.status, 200);
           return Promise.all([
-            db.collection('Debates').where('pollID', '==', pollID).get(),
+            db.collection('Debates').where('pollID', '==', POLL_ID).get(),
             profiles.doc(USER_ID).get(),
             profiles.doc(OPPONENT_ID).get()
           ]).then(([snapshot, user, opponent]) => {
@@ -91,7 +103,7 @@ describe('Debates', () => {
             assert.equal(debates.length, 1);
 
             const debate = debates[0].data();
-            assert.equal(debate.pollID, pollID);
+            assert.equal(debate.pollID, POLL_ID);
             assert.equal(debate.lastMessage, "New Debate!");
             assert.deepEqual(debate.users, { [USER_ID]: user.data(), [OPPONENT_ID]: opponent.data() });
             return true;
@@ -106,7 +118,7 @@ describe('Debates', () => {
     it('should return an error with invalid userID', () => {
       return request(api)
         .post('/debates')
-        .query({ pollID, userID: fakeUserID, category: answer })
+        .query({ pollID: POLL_ID, userID: fakeUserID, category: answer })
         .then(res => {
           assert.equal(res.status, 422);
         })

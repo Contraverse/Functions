@@ -1,11 +1,11 @@
 const { query, param, validationResult } = require('express-validator/check');
 const { getDebates, findDebate } = require('./debates');
 const { getDebate, leaveDebate } = require('./debate');
-const { isValidUser } = require('../validators/user');
+const { isValidUser, isValidPoll, isValidAnswer, isValidDebate } = require('../validators');
 
 module.exports = function (app) {
   app.get('/debates',
-    query('userID').exists(),
+    query('userID').exists().custom(isValidUser),
     (req, res) => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -20,8 +20,8 @@ module.exports = function (app) {
 
   app.post('/debates', [
     query('userID').exists().custom(isValidUser),
-    query('pollID').exists(),
-    query('category').exists()
+    query('pollID').exists().custom(isValidPoll),
+    query('category').exists().custom(isValidAnswer)
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -40,7 +40,7 @@ module.exports = function (app) {
   });
 
   app.get('/debates/:debateID',
-    param('debateID').exists(),
+    param('debateID').exists().custom(isValidDebate),
     (req, res) => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -53,8 +53,8 @@ module.exports = function (app) {
     });
 
   app.delete('/debates/:debateID', [
-    param('debateID').exists(),
-    query('userID').exists()
+    param('debateID').exists().custom(isValidDebate),
+    query('userID').exists().custom(isValidUser)
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

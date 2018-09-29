@@ -14,9 +14,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 require('./src/debates')(app);
 require('./src/feedback')(app);
 require('./src/likes')(app);
-require('./src/messages')(app);
+require('./src/messages/index')(app);
 require('./src/polls')(app);
 require('./src/spectates')(app);
 require('./src/users')(app);
 
 exports.api = functions.https.onRequest(app);
+exports.chatNotifications = require('./src/messages/notifications')(functions.firestore);
+exports.debateNotifications = require('./src/debates/notifications')(functions.firestore);

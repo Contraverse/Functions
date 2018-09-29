@@ -17,6 +17,25 @@ function removeDocument(ref) {
   })
 }
 
+function createDocument() {
+  const db = admin.firestore();
+  const data = { test: true };
+
+  if (arguments.length === 1) {
+    const path = arguments[0];
+    const ref = db.doc(path);
+    return ref.set(data);
+  }
+
+  if (arguments.length === 2) {
+    const batch = arguments[0];
+    const path = arguments[1];
+
+    const ref = db.doc(path);
+    return batch.set(ref, data);
+  }
+}
+
 function removePoll(pollID) {
   const db = admin.firestore();
   const pollRef = db.doc(`Polls/${pollID}`);
@@ -33,4 +52,4 @@ function removeUser(userID) {
   return removeDocument(userRef);
 }
 
-module.exports = { removePoll, removeUser, removeDocument };
+module.exports = { createDocument, removePoll, removeUser, removeDocument };

@@ -1,9 +1,10 @@
 const { query, param, validationResult } = require('express-validator/check');
 const { getSpectate, setSpectate, removeSpectate } = require('./methods');
+const { isValidPoll, isValidUser, isValidDebate } = require('../validators');
 
 module.exports = function (app) {
   app.get('/polls/:pollID/spectate', [
-    param('pollID').exists()
+    param('pollID').exists().custom(isValidPoll)
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -20,8 +21,8 @@ module.exports = function (app) {
   });
 
   app.post('/spectates/:chatID', [
-    param('chatID').exists(),
-    query('userID').exists()
+    param('chatID').exists().custom(isValidDebate),
+    query('userID').exists().custom(isValidUser)
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -35,8 +36,8 @@ module.exports = function (app) {
   });
 
   app.delete('/spectates/:chatID', [
-    param('chatID').exists(),
-    query('userID').exists()
+    param('chatID').exists().custom(isValidDebate),
+    query('userID').exists().custom(isValidUser)
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

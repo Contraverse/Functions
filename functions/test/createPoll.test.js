@@ -1,6 +1,6 @@
 const { assert, use, request } = require('chai');
 const chaiHttp = require('chai-http');
-const { api } = require('../index');
+const { api } = require('..');
 const admin = require('firebase-admin');
 const { removePoll } = require('./utils');
 

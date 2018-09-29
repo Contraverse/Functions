@@ -1,11 +1,12 @@
 const chai = require('chai');
 const chatHttp = require('chai-http');
-const { api } = require('../index');
+const { api } = require('..');
 const admin = require('firebase-admin');
 const { removePoll, removeUser } = require('./utils');
 const { createPoll } = require('../src/polls/methods');
+const { createUser } = require('../src/users/methods');
 
-const { QUESTION, ANSWERS, USER_ID } = require('./testData');
+const { QUESTION, ANSWERS, USER_ID, AVATAR, USERNAME } = require('./testData');
 chai.use(chatHttp);
 const { assert, request } = chai;
 
@@ -13,8 +14,11 @@ describe('Case Vote', () => {
   var pollID;
 
   before(() => {
-    return createPoll(QUESTION, ANSWERS)
-      .then(id => pollID = id);
+    return Promise.all([
+      createPoll(QUESTION, ANSWERS)
+        .then(id => pollID = id),
+      createUser(USER_ID, AVATAR, USERNAME)
+    ]);
   });
 
   after(() => {

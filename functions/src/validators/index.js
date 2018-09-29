@@ -1,5 +1,5 @@
-const { isValidDebate } = require('./debate');
+const { isValidDebate, isValidAnswer } = require('./debate');
 const { isValidPoll } = require('./poll');
 const { isValidUser } = require('./user');
 
-module.exports = { isValidDebate, isValidPoll, isValidUser };
+module.exports = { isValidDebate, isValidPoll, isValidUser, isValidAnswer };

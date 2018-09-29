@@ -1,10 +1,24 @@
 const admin = require('firebase-admin');
 
 function isValidDebate(chatID) {
-  const db = admin.firestore();
-  return db.doc(`Debates/${chatID}`)
-    .get()
+  return getDebate(chatID)
     .then(doc => doc.exists);
 }
 
-module.exports = { isValidDebate };
+function isValidAnswer(answer, { req }) {
+  const { pollID } = req.query;
+  return admin.firestore()
+    .doc(`Polls/${pollID}`)
+    .get()
+    .then(doc => {
+      return answer < doc.data().answers.length;
+    });
+}
+
+function getDebate(debateID) {
+  return admin.firestore()
+    .doc(`Debates/${debateID}`)
+    .get();
+}
+
+module.exports = { isValidDebate, isValidAnswer };

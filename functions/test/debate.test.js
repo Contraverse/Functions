@@ -1,7 +1,7 @@
 const { assert, use, request } = require('chai');
 const admin = require('firebase-admin');
 const chaiHttp = require('chai-http');
-const { api } = require('../index');
+const { api } = require('..');
 const { createUser } = require('../src/users/methods');
 const { setupChatroom } = require('../src/debates/debates');
 const { removeUser, removeDocument } = require('./utils');
@@ -19,12 +19,11 @@ describe('Debate', () => {
       .then(() => {
         const db = admin.firestore();
         return db.runTransaction(t => {
-          const response = {};
-          return setupChatroom(t, db, USER_ID, OPPONENT_ID, POLL_ID, response)
-            .then(() => {
-              CHAT_ID = response.chatID;
-              REF = admin.firestore()
-                .doc(`Debates/${CHAT_ID}`);
+          return setupChatroom(t, db, USER_ID, OPPONENT_ID, POLL_ID)
+            .then(chatID => {
+              CHAT_ID = chatID;
+              console.log(chatID);
+              REF = db.doc(`Debates/${chatID}`);
             });
         })
       })
