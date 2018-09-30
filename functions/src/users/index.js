@@ -46,6 +46,6 @@ module.exports = function (app) {
     const { token } = req.body;
 
     return updateToken(userID, token)
-      .send(() => res.status(200).send('OK'));
+      .then(() => res.status(200).send('OK'));
   })
 };

@@ -19,6 +19,7 @@
   ],
   "USER_ID": "USER_ID",
   "OPPONENT_ID": "OPPONENT_ID",
+  "TOKEN": "FCM_TOKEN",
   "AVATAR": "www.image.com",
   "GENDER": "female",
   "USERNAME": "Joe West",
