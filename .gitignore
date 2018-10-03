@@ -64,3 +64,4 @@ typings/
 .idea/
 .DS_Store
 functions/config/auth.json
+functions/config/adminUsers.json

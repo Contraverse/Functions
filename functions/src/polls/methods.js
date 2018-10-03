@@ -18,14 +18,14 @@ function getPolls() {
     });
 }
 
-function createPoll(question, answers) {
+function createPoll(question, answers, pending = true) {
   const db = admin.firestore();
   const pollRef = db.collection('Polls').doc();
   const resultsRef = db.doc(`Results/${pollRef.id}`);
   const batch = db.batch();
   batch.set(pollRef, {
     title: question,
-    pending: true,
+    pending,
     answers,
     dateCreated: admin.firestore.FieldValue.serverTimestamp()
   });

@@ -11,6 +11,7 @@ admin.initializeApp(projectConfig);
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+require('./src/admin')(app);
 require('./src/debates')(app);
 require('./src/feedback')(app);
 require('./src/likes')(app);

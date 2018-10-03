@@ -1,8 +1,13 @@
 {
   "QUESTION": "What is your favorite color?",
+  "NEW_QUESTION": "What is your least favorite color?",
   "ANSWERS": [
     "Red",
     "Blue"
+  ],
+  "NEW_ANSWERS": [
+    "Purple",
+    "Green"
   ],
   "MESSAGES": [
     {

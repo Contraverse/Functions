@@ -1,5 +1,5 @@
 const chai = require('chai');
-const chatHttp = require('chai-http');
+const chaiHttp = require('chai-http');
 const { api } = require('..');
 const admin = require('firebase-admin');
 const { removePoll, removeUser } = require('./utils');
@@ -7,7 +7,7 @@ const { createPoll } = require('../src/polls/methods');
 const { createUser } = require('../src/users/methods');
 
 const { QUESTION, ANSWERS, USER_ID, AVATAR, USERNAME } = require('./testData');
-chai.use(chatHttp);
+chai.use(chaiHttp);
 const { assert, request } = chai;
 
 describe('Case Vote', () => {
