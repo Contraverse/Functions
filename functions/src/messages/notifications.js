@@ -15,10 +15,9 @@ function sendNotification(debateID, message) {
       const { users, pollID } = doc.data();
       const opponentID = getOpponentID(users, message.userID);
       opponentUsername = users[opponentID].username;
-      return Promise.all([
-        db.doc(`Tokens/${opponentID}`).get(),
-        db.doc(`Polls/${pollID}`).get()
-      ]);
+      const tokenRef = db.doc(`Tokens/${opponentID}`);
+      const pollRef = db.doc(`Polls/${pollID}`);
+      return db.getAll(tokenRef, pollRef);
     })
     .then(([token, poll]) => {
       const body = createNotification(debateID, message, poll.data().title, opponentUsername, token.data().token);

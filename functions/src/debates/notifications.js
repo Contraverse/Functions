@@ -17,15 +17,12 @@ function sendNotification(chatID, userID, pollID) {
   const userRef = db.doc(`Profiles/${userID}`);
   const pollRef = db.doc(`Polls/${pollID}`);
   const tokenRef = db.doc(`Tokens/${userID}`);
-  return Promise.all([
-    userRef.get(),
-    pollRef.get(),
-    tokenRef.get()
-  ]).then(([user, poll, tokenDoc]) => {
-    const token = tokenDoc.data().token;
-    const message = createNotification(chatID, user.data(), poll.data(), token);
-    return admin.messaging().send(message);
-  })
+  return db.getAll(userRef, pollRef, tokenRef)
+    .then(([user, poll, tokenDoc]) => {
+      const token = tokenDoc.data().token;
+      const message = createNotification(chatID, user.data(), poll.data(), token);
+      return admin.messaging().send(message);
+    })
 }
 
 function createNotification(chatID, user, poll, token) {

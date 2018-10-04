@@ -48,10 +48,7 @@ function setupChatroom(t, db, userID, opponentID, pollID) {
   const userRef = profiles.doc(userID);
   const opponentRef = profiles.doc(opponentID);
 
-  return Promise.all([
-    t.get(userRef),
-    t.get(opponentRef)
-  ]).then(([user, opponent]) => {
+  return t.getAll(userRef, opponentRef).then(([user, opponent]) => {
     const debate = createDebateDoc(pollID, user, opponent);
 
     console.log('Setup Chatroom Debate Object: ', debate);
