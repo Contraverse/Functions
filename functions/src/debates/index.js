@@ -1,25 +1,27 @@
 const { query, param, validationResult } = require('express-validator/check');
+const { validateUserID } = require('../auth');
 const { getDebates, findDebate } = require('./debates');
 const { getDebate, leaveDebate } = require('./debate');
-const { isValidUser, isValidPoll, isValidAnswer, isValidDebate } = require('../validators');
+const { isValidPoll, isValidAnswer, isValidDebate } = require('../validators');
 
 module.exports = function (app) {
+
   app.get('/debates',
-    query('userID').exists().custom(isValidUser),
+    validateUserID,
     (req, res) => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(422).json({ errors: errors.array() });
       }
 
-      const { userID } = req.query;
+      const { userID } = req;
 
       return getDebates(userID)
         .then(result => res.status(200).send(result))
     });
 
   app.post('/debates', [
-    query('userID').exists().custom(isValidUser),
+    validateUserID,
     query('pollID').exists().custom(isValidPoll),
     query('category').exists().custom(isValidAnswer)
   ], (req, res) => {
@@ -27,8 +29,9 @@ module.exports = function (app) {
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
+    const { userID } = req;
+    const { pollID, category } = req.query;
 
-    const { userID, pollID, category } = req.query;
     return findDebate(userID, pollID, category)
       .then(result => {
         if (result.found) {
@@ -53,8 +56,8 @@ module.exports = function (app) {
     });
 
   app.delete('/debates/:debateID', [
+    validateUserID,
     param('debateID').exists().custom(isValidDebate),
-    query('userID').exists().custom(isValidUser)
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -62,7 +65,7 @@ module.exports = function (app) {
     }
 
     const { debateID } = req.params;
-    const { userID } = req.query;
+    const { userID } = req;
     return leaveDebate(userID, debateID)
       .then(() => res.status(200).send('OK'));
   });

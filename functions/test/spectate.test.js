@@ -2,12 +2,12 @@ const { assert } = require('chai');
 const admin = require('firebase-admin');
 const request = require('supertest');
 const { api } = require('..');
-const { createDocument, removeDocument, removePoll } = require('./utils');
+const { createDocument, removeDocument, removePoll, generateAuthHeader } = require('./utils');
 
 const { USER_ID } = require('./testData');
 
 describe('Spectate', () => {
-  var POLL_ID = 'FAKE_POLL_ID';
+  let POLL_ID = 'FAKE_POLL_ID';
 
   before(() => {
     return createDocument(`Polls/${POLL_ID}`);
@@ -26,7 +26,7 @@ describe('Spectate', () => {
   });
 
   describe('Test with an active debate', () => {
-    var DOC_ID, spectateRef;
+    let DOC_ID, spectateRef;
     before(() => {
       const db = admin.firestore();
       const batch = db.batch();
@@ -62,7 +62,7 @@ describe('Spectate', () => {
     it('should subscribe to a debate', () => {
       return request(api)
         .post(`/spectates/${DOC_ID}`)
-        .query({ userID: USER_ID })
+        .set('Authorization', generateAuthHeader(USER_ID))
         .then(res => {
           assert.equal(res.status, 200);
           return spectateRef.get()
@@ -73,7 +73,7 @@ describe('Spectate', () => {
     it('should return 422 on incomplete subscribe request', () => {
       return request(api)
         .post(`/spectates/${DOC_ID}`)
-        .expect(422)
+        .expect(401)
     });
 
     describe('Unsubscribe', () => {
@@ -84,7 +84,7 @@ describe('Spectate', () => {
       it('should unsubscribe to a debate', () => {
         return request(api)
           .delete(`/spectates/${DOC_ID}`)
-          .query({ userID: USER_ID })
+          .set('Authorization', generateAuthHeader(USER_ID))
           .then(res => {
             assert(res.status, 200);
             return spectateRef.get()

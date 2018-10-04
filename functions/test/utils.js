@@ -52,4 +52,8 @@ function removeUser(userID) {
   return removeDocument(userRef);
 }
 
-module.exports = { createDocument, removePoll, removeUser, removeDocument };
+function generateAuthHeader(userID) {
+  return `Bearer ${userID}`;
+}
+
+module.exports = { createDocument, removePoll, removeUser, removeDocument, generateAuthHeader };

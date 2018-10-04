@@ -1,17 +1,18 @@
-const { assert, use, request } = require('chai');
+const chai = require('chai');
 const admin = require('firebase-admin');
 const chaiHttp = require('chai-http');
 const { api } = require('..');
 const { findDebate } = require('../src/debates/debates');
 const { createPoll } = require('../src/polls/methods');
 const { createUser } = require('../src/users/methods');
-const { createDocument, removePoll, removeUser } = require('./utils');
+const { createDocument, removePoll, removeUser, generateAuthHeader } = require('./utils');
 
 const { QUESTION, ANSWERS, USER_ID, AVATAR, USERNAME, OPPONENT_ID } = require('./testData');
-use(chaiHttp);
+chai.use(chaiHttp);
+const { assert, request } = chai;
 
 describe('Debates', () => {
-  var POLL_ID;
+  let POLL_ID;
   before(() => {
     return Promise.all([
       createPoll(QUESTION, ANSWERS),
@@ -29,7 +30,7 @@ describe('Debates', () => {
   });
 
   describe('Test Queue', () => {
-    var answer = 0;
+    let answer = 0;
     after(() => {
       return admin.firestore()
         .doc(`Polls/${POLL_ID}/Queue${answer}/${USER_ID}`)
@@ -41,7 +42,8 @@ describe('Debates', () => {
 
       return request(api)
         .post('/debates')
-        .query({ pollID: POLL_ID, userID: USER_ID, category: answer })
+        .set('Authorization', generateAuthHeader(USER_ID))
+        .query({ pollID: POLL_ID, category: answer })
         .then(res => {
           assert.equal(res.status, 204);
           return db.collection(`Polls/${POLL_ID}/Queue${answer}`).get()
@@ -56,8 +58,8 @@ describe('Debates', () => {
   });
 
   describe('Test Debate Room', () => {
-    var answer = 0;
-    var opponentAnswer = 1;
+    let answer = 0;
+    let opponentAnswer = 1;
 
     before(() => {
       const db = admin.firestore();
@@ -91,7 +93,8 @@ describe('Debates', () => {
       const profiles = db.collection('Profiles');
       return request(api)
         .post('/debates')
-        .query({ pollID: POLL_ID, userID: OPPONENT_ID, category: opponentAnswer })
+        .set('Authorization', generateAuthHeader(OPPONENT_ID))
+        .query({ pollID: POLL_ID, category: opponentAnswer })
         .then(res => {
           assert.equal(res.status, 200);
           return Promise.all([
@@ -118,9 +121,10 @@ describe('Debates', () => {
     it('should return an error with invalid userID', () => {
       return request(api)
         .post('/debates')
-        .query({ pollID: POLL_ID, userID: fakeUserID, category: answer })
+        .set('Authorization', generateAuthHeader(fakeUserID))
+        .query({ pollID: POLL_ID, category: answer })
         .then(res => {
-          assert.equal(res.status, 422);
+          assert.equal(res.status, 401);
         })
     })
   })

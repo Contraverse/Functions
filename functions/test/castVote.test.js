@@ -2,7 +2,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { api } = require('..');
 const admin = require('firebase-admin');
-const { removePoll, removeUser } = require('./utils');
+const { removePoll, removeUser, generateAuthHeader } = require('./utils');
 const { createPoll } = require('../src/polls/methods');
 const { createUser } = require('../src/users/methods');
 
@@ -11,7 +11,7 @@ chai.use(chaiHttp);
 const { assert, request } = chai;
 
 describe('Case Vote', () => {
-  var pollID;
+  let pollID;
 
   before(() => {
     return Promise.all([
@@ -37,8 +37,9 @@ describe('Case Vote', () => {
 
     return request(api)
       .put(`/polls/${pollID}`)
-      .query({ userID: USER_ID, answer })
       .set('Accept', 'application/json')
+      .set('Authorization', generateAuthHeader(USER_ID))
+      .query({ answer })
       .then((res) => {
         assert.equal(res.status, 200);
         return Promise.all([

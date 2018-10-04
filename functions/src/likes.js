@@ -13,23 +13,37 @@ function handler(app) {
 
     const { debateID } = req.params;
     const { messageID } = req.query;
-    return likeMessage(debateID, messageID)
-      .then(likes => res.status(200).send({ likes }));
+    return updateLikes(debateID, messageID, 1)
+      .then(likes => res.status(200).json({ likes }));
+  });
+
+  app.delete('/debates/:debateID/likes', [
+    param('debateID').exists(),
+    query('messageID').exists()
+  ], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    const { debateID } = req.params;
+    const { messageID } = req.query;
+    return updateLikes(debateID, messageID, -1)
+      .then(likes => res.status(200).json({ likes }));
   })
 }
 
-function likeMessage(debateID, messageID) {
+function updateLikes(debateID, messageID, amount) {
   const db = admin.firestore();
   const messageRef = db.doc(`Debates/${debateID}/Messages/${messageID}`);
-  let result = null;
   return db.runTransaction(t => {
     return t.get(messageRef)
       .then(doc => {
         const message = doc.data();
-        result = message.likes = (message.likes || 0) + 1;
-        return t.set(messageRef, message);
+        message.likes = (message.likes || 0) + amount;
+        t.set(messageRef, message);
+        return message.likes;
       })
-      .then(() => result)
   })
 }
 

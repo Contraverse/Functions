@@ -1,19 +1,20 @@
 const { param, query, body, validationResult } = require('express-validator/check');
+const { validateUserID } = require('../auth');
 const { castVote, getPolls, createPoll } = require('./methods');
-const { isValidUser, isValidPoll } = require('../validators');
+const { isValidPoll } = require('../validators');
 
 module.exports = function (app) {
   app.put('/polls/:pollID', [
+    validateUserID,
     param('pollID').exists().custom(isValidPoll),
-    query('userID').exists().custom(isValidUser),
     query('answer').exists().toInt(),
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
-
-    const { userID, answer } = req.query;
+    const { userID } = req;
+    const { answer } = req.query;
     const { pollID } = req.params;
     return castVote(userID, pollID, answer)
       .then(result => res.status(200).json(result));

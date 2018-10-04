@@ -7,8 +7,7 @@ module.exports = function (req, res, next) {
       'Make sure you authorize your request by providing the following HTTP header:',
       'Authorization: Bearer <Firebase ID Token>',
       'or by passing a "__session" cookie.');
-    res.status(403).send('Unauthorized');
-    return;
+    return res.status(403).send('Unauthorized');
   }
 
   let idToken;
@@ -22,8 +21,7 @@ module.exports = function (req, res, next) {
     idToken = req.cookies.__session;
   } else {
     // No cookie
-    res.status(403).send('Unauthorized');
-    return;
+    return res.status(403).send('Unauthorized');
   }
   admin.auth().verifyIdToken(idToken).then((decodedIdToken) => {
     console.log('ID Token correctly decoded', decodedIdToken);

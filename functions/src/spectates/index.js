@@ -1,6 +1,7 @@
-const { query, param, validationResult } = require('express-validator/check');
+const { param, validationResult } = require('express-validator/check');
+const { validateUserID } = require('../auth');
 const { getSpectate, setSpectate, removeSpectate } = require('./methods');
-const { isValidPoll, isValidUser, isValidDebate } = require('../validators');
+const { isValidPoll, isValidDebate } = require('../validators');
 
 module.exports = function (app) {
   app.get('/polls/:pollID/spectate', [
@@ -21,31 +22,33 @@ module.exports = function (app) {
   });
 
   app.post('/spectates/:chatID', [
+    validateUserID,
     param('chatID').exists().custom(isValidDebate),
-    query('userID').exists().custom(isValidUser)
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
 
+    const { userID } = req;
     const { chatID } = req.params;
-    const { userID } = req.query;
+
     return setSpectate(userID, chatID)
       .then(() => res.status(200).send('OK'));
   });
 
   app.delete('/spectates/:chatID', [
+    validateUserID,
     param('chatID').exists().custom(isValidDebate),
-    query('userID').exists().custom(isValidUser)
   ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
 
+    const { userID } = req;
     const { chatID } = req.params;
-    const { userID } = req.query;
+
     return removeSpectate(userID, chatID)
       .then(() => res.status(200).send('OK'));
   })

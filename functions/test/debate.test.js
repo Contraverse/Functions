@@ -1,17 +1,18 @@
-const { assert, use, request } = require('chai');
+const chai = require('chai');
 const admin = require('firebase-admin');
 const chaiHttp = require('chai-http');
 const { api } = require('..');
 const { createUser } = require('../src/users/methods');
 const { setupChatroom } = require('../src/debates/debates');
-const { removeUser, removeDocument } = require('./utils');
+const { removeUser, removeDocument, generateAuthHeader } = require('./utils');
 
 const { USER_ID, OPPONENT_ID, AVATAR, USERNAME } = require('./testData');
-use(chaiHttp);
+chai.use(chaiHttp);
+const { assert, request } = chai;
 
 describe('Debate', () => {
   const POLL_ID = 'FAKE_POLL_ID';
-  var CHAT_ID, REF;
+  let CHAT_ID, REF;
   before(() => {
     const user = createUser(USER_ID, AVATAR, USERNAME);
     const opponent = createUser(OPPONENT_ID, AVATAR, USERNAME);
@@ -39,13 +40,21 @@ describe('Debate', () => {
   it('should leave the debate', () => {
     return request(api)
       .delete(`/debates/${CHAT_ID}`)
-      .query({ userID: USER_ID })
+      .set('Authorization', generateAuthHeader(USER_ID))
       .then(res => {
         assert.equal(res.status, 200);
         return REF.get()
           .then(doc => {
             const users = Object.keys(doc.data().users);
             assert.equal(users.length, 1);
+            return REF.collection('Messages').get()
+              .then(snapshot => {
+                assert.equal(snapshot.docs.length, 1);
+
+                const message = snapshot.docs[0].data();
+                assert.equal(message.system, true);
+                assert.equal(message.text, `${USERNAME} has left the debate`);
+              })
           })
       })
   });
@@ -53,7 +62,7 @@ describe('Debate', () => {
   it('should delete the empty room', () => {
     return request(api)
       .delete(`/debates/${CHAT_ID}`)
-      .query({ userID: OPPONENT_ID })
+      .set('Authorization', generateAuthHeader(OPPONENT_ID))
       .then(res => {
         assert.equal(res.status, 200);
         return REF.get()

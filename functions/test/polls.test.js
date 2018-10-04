@@ -1,14 +1,15 @@
-const { assert, use, request } = require('chai');
+const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { api } = require('..');
 const { removePoll } = require('./utils');
 const { createPoll } = require('../src/polls/methods');
 
 const { QUESTION, ANSWERS } = require('./testData');
-use(chaiHttp);
+chai.use(chaiHttp);
+const { assert, request } = chai;
 
 describe('Get Polls', () => {
-  var POLL_ID;
+  let POLL_ID;
   before(() => {
     return createPoll(QUESTION, ANSWERS)
       .then(id => POLL_ID = id);

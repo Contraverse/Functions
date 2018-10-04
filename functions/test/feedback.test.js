@@ -1,12 +1,13 @@
-const { assert, use, request } = require('chai');
+const chai = require('chai');
 const chaiHttp = require('chai-http');
 const admin = require('firebase-admin');
 const { api } = require('..');
 
-use(chaiHttp);
+chai.use(chaiHttp);
+const { assert, request } = chai;
 
 describe('Feedback', () => {
-  var UID;
+  let UID;
   const MESSAGE = "I think the app is really cool";
   after(() => {
     return admin.storage()

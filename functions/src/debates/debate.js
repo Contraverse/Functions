@@ -16,7 +16,9 @@ function leaveDebate(userID, debateID) {
       debate = doc.data();
       delete debate.users[userID];
       if (isActive(debate.users)) {
-        return t.update(debateRef, debate);
+        t.update(debateRef, debate);
+        return generateSystemLeaveMessage(userID)
+          .then(message => t.set(debateRef.collection('Messages').doc(), message));
       }
       else {
         return deleteDebate(t, debateRef);
@@ -26,9 +28,24 @@ function leaveDebate(userID, debateID) {
 }
 
 function deleteDebate(t, ref) {
-  return t.get(ref.collection('Messages')).then(snapshot => {
-    return Promise.all(snapshot.docs.map(doc => t.delete(doc.ref)))
-  }).then(() => t.delete(ref))
+  return t.get(ref.collection('Messages'))
+    .then(snapshot => {
+      snapshot.docs.forEach(doc => t.delete(doc.ref));
+      t.delete(ref);
+    });
+}
+
+function generateSystemLeaveMessage(userID) {
+  const db = admin.firestore();
+  return db.doc(`Profiles/${userID}`).get()
+    .then(doc => {
+      const { username } = doc.data();
+      return {
+        text: `${username} has left the debate`,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        system: true
+      }
+    })
 }
 
 function isActive(users) {
