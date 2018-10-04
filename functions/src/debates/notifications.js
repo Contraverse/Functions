@@ -3,9 +3,11 @@ const admin = require('firebase-admin');
 module.exports = function (app) {
   return app.document('Debates/{debateID}')
     .onCreate((snap, context) => {
-      const userIDs = Object.keys(snap.data().users);
-      const { debateID, pollID } = context.params;
-
+      const debate = snap.data();
+      const userIDs = Object.keys(debate.users);
+      const { pollID } = debate;
+      const { debateID } = context.params;
+      console.log('Params', debate, userIDs, pollID, debateID);
       return Promise.all(userIDs.map(userID => sendNotification(debateID, userID, pollID)));
     })
 };
@@ -30,10 +32,7 @@ function createNotification(chatID, user, poll, token) {
   const data = {
     type: 'debate',
     debateId: chatID,
-    poll: {
-      id: poll.id,
-      question: poll.title
-    }
+    pollQuestion: poll.title
   };
 
   const notification = {
@@ -49,6 +48,6 @@ function createNotification(chatID, user, poll, token) {
       }
     }
   };
-
+  console.log('Notification', notification, apns, data, token);
   return { notification, apns, data, token };
 }

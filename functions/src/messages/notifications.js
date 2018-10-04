@@ -9,15 +9,19 @@ module.exports = function (app) {
 
 function sendNotification(debateID, message) {
   const db = admin.firestore();
+  let opponentUsername = null;
   return db.doc(`Debates/${debateID}`).get()
     .then(doc => {
-      const { users } = doc.data();
+      const { users, pollID } = doc.data();
       const opponentID = getOpponentID(users, message.userID);
-      return db.doc(`Tokens/${opponentID}`).get()
+      opponentUsername = users[opponentID].username;
+      return Promise.all([
+        db.doc(`Tokens/${opponentID}`).get(),
+        db.doc(`Polls/${pollID}`).get()
+      ]);
     })
-    .then(doc => {
-      const { token } = doc.data();
-      const body = createNotification(debateID, message, token);
+    .then(([token, poll]) => {
+      const body = createNotification(debateID, message, poll.data().title, opponentUsername, token.data().token);
       return admin.messaging().send(body);
     })
 }
@@ -27,9 +31,9 @@ function getOpponentID(users, userID) {
   return keys[0] === userID ? keys[1] : keys[0];
 }
 
-function createNotification(debateID, message, token) {
+function createNotification(debateID, message, question, username, token) {
   const notification = {
-    title: 'New Message',
+    title: `${username}: ${question}`,
     body: message.text
   };
 
