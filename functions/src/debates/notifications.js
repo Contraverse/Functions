@@ -7,7 +7,6 @@ module.exports = function (app) {
       const userIDs = Object.keys(debate.users);
       const { pollID } = debate;
       const { debateID } = context.params;
-      console.log('Params', debate, userIDs, pollID, debateID);
       return Promise.all(userIDs.map(userID => sendNotification(debateID, userID, pollID)));
     })
 };

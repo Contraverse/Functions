@@ -26,5 +26,16 @@ describe('Firestore', () => {
         assert.deepEqual(doc.data(), { test: true });
       })
     })
+  });
+
+  it('should not throw an error on a weird query', () => {
+    const db = admin.firestore();
+    const query = db.collection('Avatars')
+      .where('x.y.z', '==', true);
+
+    return query.get()
+      .then(snapshot => {
+        assert.equal(snapshot.docs.length, 0);
+      });
   })
 });

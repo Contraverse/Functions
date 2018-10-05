@@ -1,13 +1,17 @@
-const { assert } = require('chai');
+const chai = require('chai');
 const admin = require('firebase-admin');
-const request = require('supertest');
 const { api } = require('..');
+const updateUsersinDebates = require('../src/users/background').helpers._updateUserDocsInDebates;
 const { createUser } = require('../src/users/methods');
 const { removeUser } = require('./utils');
 
-const { USER_ID, AVATAR, USERNAME } = require('./testData');
+chai.use(require('chai-http'));
+const { assert, request } = chai;
+const { USER_ID, AVATAR, USERNAME, DEBATE_ID } = require('./testData');
 
 describe('Users', () => {
+  const db = admin.firestore();
+
   describe('POST', () => {
     after(() => {
       return removeUser(USER_ID);
@@ -63,7 +67,37 @@ describe('Users', () => {
           assert.equal(user.username, newUsername);
         })
     })
+  });
+
+  describe('Background', () => {
+    before(() => {
+      const doc = {
+        users: {
+          [USER_ID]: { update: true }
+        }
+      };
+
+      return getDebateRef().set(doc);
+    });
+
+    after(() => {
+      return getDebateRef().delete();
+    });
+
+    it('should update the debate', () => {
+      const newUser = { newKey: true };
+      return updateUsersinDebates(USER_ID, newUser)
+        .then(() => getDebateRef().get())
+        .then(doc => {
+          assert.deepEqual(doc.data().users[USER_ID], newUser);
+        })
+    });
+
+    function getDebateRef() {
+      return db.doc(`Debates/${DEBATE_ID}`);
+    }
   })
+
 });
 
 function getUser() {

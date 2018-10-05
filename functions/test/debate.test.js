@@ -23,7 +23,6 @@ describe('Debate', () => {
           return setupChatroom(t, db, USER_ID, OPPONENT_ID, POLL_ID)
             .then(chatID => {
               CHAT_ID = chatID;
-              console.log(chatID);
               REF = db.doc(`Debates/${chatID}`);
             });
         })
@@ -45,8 +44,8 @@ describe('Debate', () => {
         assert.equal(res.status, 200);
         return REF.get()
           .then(doc => {
-            const users = Object.keys(doc.data().users);
-            assert.equal(users.length, 1);
+            assert.isTrue(doc.exists);
+            assert.isFalse(doc.data().users[USER_ID].active);
             return REF.collection('Messages').get()
               .then(snapshot => {
                 assert.equal(snapshot.docs.length, 1);

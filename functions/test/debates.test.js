@@ -108,11 +108,21 @@ describe('Debates', () => {
             const debate = debates[0].data();
             assert.equal(debate.pollID, POLL_ID);
             assert.equal(debate.lastMessage, "New Debate!");
-            assert.deepEqual(debate.users, { [USER_ID]: user.data(), [OPPONENT_ID]: opponent.data() });
-            return true;
+            assert.deepEqual(debate.users, {
+              [USER_ID]: generateUserDoc(user),
+              [OPPONENT_ID]: generateUserDoc(opponent)
+            });
           });
         })
-    })
+    });
+
+    function generateUserDoc(user) {
+      return {
+        ...user.data(),
+        update: true,
+        active: true
+      }
+    }
   });
 
   describe('Test Errors', () => {

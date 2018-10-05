@@ -2,7 +2,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const admin = require('firebase-admin');
 const { api } = require('..');
-const { createDocument, removeDocument, removePoll, generateAuthHeader } = require('./utils');
+const { createDocument, removeDocument, generateAuthHeader } = require('./utils');
 
 chai.use(chaiHttp);
 const { assert, request } = chai;

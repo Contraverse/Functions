@@ -8,12 +8,9 @@ const { QUESTION, ANSWERS } = require('./testData');
 use(chaiHttp);
 
 describe('Create Poll', () => {
-  var pollID;
+  let pollID;
   after(() => {
-    if (pollID)
-      return removePoll(pollID);
-    else
-      console.log('pollID not set');
+    return removePoll(pollID);
   });
 
   it('should create a poll', () => {

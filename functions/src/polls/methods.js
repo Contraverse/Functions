@@ -39,17 +39,15 @@ function castVote(userID, pollID, answer) {
   const db = admin.firestore();
   const userRef = db.doc(`Profiles/${userID}`);
   const votesRef = db.doc(`Results/${pollID}`);
-  let totalVotes;
   return db.runTransaction(t => {
     return t.get(votesRef).then(doc => {
-      totalVotes = doc.data();
+      const totalVotes = doc.data();
       totalVotes.counts[answer]++;
 
-      return Promise.all([
-        t.update(votesRef, totalVotes),
-        t.set(userRef.collection('Polls').doc(pollID), { answer })
-      ]);
-    }).then(() => totalVotes)
+      t.update(votesRef, totalVotes);
+      t.set(userRef.collection('Polls').doc(pollID), { answer });
+      return totalVotes;
+    })
   })
 }
 

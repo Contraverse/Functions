@@ -14,7 +14,7 @@ function leaveDebate(userID, debateID) {
     let debate = null;
     return t.get(debateRef).then(doc => {
       debate = doc.data();
-      delete debate.users[userID];
+      debate.users[userID].active = false;
       if (isActive(debate.users)) {
         t.update(debateRef, debate);
         return generateSystemLeaveMessage(userID)
@@ -49,7 +49,11 @@ function generateSystemLeaveMessage(userID) {
 }
 
 function isActive(users) {
-  return Object.keys(users).length > 0;
+  for (const userID in users) {
+    if (users[userID].active)
+      return true;
+  }
+  return false;
 }
 
 module.exports = { getDebate, leaveDebate };

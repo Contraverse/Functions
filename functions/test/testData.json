@@ -24,6 +24,7 @@
   ],
   "USER_ID": "USER_ID",
   "OPPONENT_ID": "OPPONENT_ID",
+  "DEBATE_ID": "FAKE_DEBATE_ID",
   "TOKEN": "FCM_TOKEN",
   "AVATAR": "www.image.com",
   "GENDER": "female",
