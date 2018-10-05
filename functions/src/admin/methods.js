@@ -20,12 +20,12 @@ function removeDocument(ref) {
     return ref.getCollections()
       .then(collections => {
         return Promise.all(collections.map(collection => collection.get()))
-          .then(collections => {
-            const deletes = [];
-            for (const collection of collections)
-              deletes.concat(collection.docs.map(doc => removeDocument(doc.ref)));
-            return Promise.all(deletes);
-          })
+      })
+      .then(collections => {
+        const deletes = [];
+        for (const collection of collections)
+          deletes.concat(collection.docs.map(doc => removeDocument(doc.ref)));
+        return Promise.all(deletes);
       })
       .then(() => t.delete(ref));
   })

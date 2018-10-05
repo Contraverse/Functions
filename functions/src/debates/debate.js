@@ -31,7 +31,7 @@ function deleteDebate(t, ref) {
   return t.get(ref.collection('Messages'))
     .then(snapshot => {
       snapshot.docs.forEach(doc => t.delete(doc.ref));
-      t.delete(ref);
+      return t.delete(ref);
     });
 }
 

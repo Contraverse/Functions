@@ -68,11 +68,7 @@ function createDebateDoc(pollID, user, opponent) {
 }
 
 function createUserDoc(user) {
-  return {
-    ...user.data(),
-    active: true,
-    update: true
-  }
+  return Object.assign({ active: true, update: true }, user.data());
 }
 
 module.exports = { getDebates, findDebate, setupChatroom };

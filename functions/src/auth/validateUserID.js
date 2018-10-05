@@ -12,7 +12,7 @@ module.exports = function (req, res, next) {
           return next();
         }
         else {
-          failRequest(res);
+          return failRequest(res);
         }
       })
   }

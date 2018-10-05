@@ -1,3 +1,3 @@
-const validateUserID = require('./validateuserID');
+const validateUserID = require('./validateUserID');
 
 module.exports = { validateUserID };
