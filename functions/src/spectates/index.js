@@ -5,6 +5,7 @@ const { isValidPoll, isValidDebate } = require('../validators');
 
 module.exports = function (app) {
   app.get('/polls/:pollID/spectate', [
+    validateUserID,
     param('pollID').exists().custom(isValidPoll)
   ], (req, res) => {
     const errors = validationResult(req);
@@ -12,8 +13,9 @@ module.exports = function (app) {
       return res.status(422).json({ errors: errors.array() });
     }
 
+    const { userID } = req;
     const { pollID } = req.params;
-    return getSpectate(pollID)
+    return getSpectate(userID, pollID)
       .then(spectateID => {
         if (spectateID)
           return res.status(200).json({ spectateID });
