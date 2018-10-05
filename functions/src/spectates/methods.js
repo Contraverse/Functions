@@ -5,7 +5,7 @@ function getSpectate(userID, pollID) {
   const query = db.collection('Debates').where('pollID', '==', pollID);
   return query.get().then(snapshot => {
     const debates = snapshot.docs
-      .filter(doc => !(userID in doc.data().users));
+      .filter(doc => isGoodSpectate(doc.data(), userID));
 
     if (debates.length === 0) {
       return null;
@@ -14,6 +14,13 @@ function getSpectate(userID, pollID) {
     const chat = debates[Math.floor(Math.random() * debates.length)];
     return chat.id;
   });
+}
+
+function isGoodSpectate(spectate, userID) {
+  return spectate.users &&
+    !(userID in spectate.users) &&
+    spectate.lastMessage &&
+    spectate.lastMessage !== 'New Debate!';
 }
 
 function setSpectate(userID, chatID) {

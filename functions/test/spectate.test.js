@@ -6,13 +6,14 @@ const { createDocument, removeDocument, removePoll, generateAuthHeader } = requi
 
 chai.use(chaiHttp);
 const { assert, request } = chai;
-const { USER_ID, OPPONENT_ID } = require('./testData');
+const { USER_ID, OPPONENT_ID, OPENING } = require('./testData');
 
 describe('Spectate', () => {
+  const db = admin.firestore();
   let POLL_ID = 'FAKE_POLL_ID';
 
   before(() => {
-    const batch = admin.firestore().batch();
+    const batch = db.batch();
 
     createDocument(batch, `Polls/${POLL_ID}`);
     createDocument(batch, `Profiles/${USER_ID}`);
@@ -22,7 +23,13 @@ describe('Spectate', () => {
   });
 
   after(() => {
-    return removePoll(POLL_ID);
+    const batch = db.batch();
+
+    batch.delete(db.doc(`Polls/${POLL_ID}`));
+    batch.delete(db.doc(`Profiles/${USER_ID}`));
+    batch.delete(db.doc(`Profiles/${OPPONENT_ID}`));
+
+    return batch.commit();
   });
 
   describe('Edge Cases', () => {
@@ -59,7 +66,8 @@ describe('Spectate', () => {
         pollID: POLL_ID,
         users: {
           [OPPONENT_ID]: { test: true }
-        }
+        },
+        lastMessage: OPENING
       });
       return batch.commit();
     });
