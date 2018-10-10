@@ -37,4 +37,10 @@ function updateToken(userID, token) {
     .set({ token });
 }
 
-module.exports = { createUser, updateUser, getRandomAvatar, updateToken };
+function deleteToken(userID) {
+  return admin.firestore()
+    .doc(`Tokens/${userID}`)
+    .delete()
+}
+
+module.exports = { createUser, updateUser, getRandomAvatar, updateToken, deleteToken };

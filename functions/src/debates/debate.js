@@ -1,6 +1,20 @@
 const admin = require('firebase-admin');
 const { getDocument } = require('../utils/document');
 
+function clearNotifications(debateID, userID) {
+  const db = admin.firestore();
+  const userRef = db.doc(`Profiles/${userID}`);
+  const notificationsRef = db.doc(`Profiles/${userID}/Notifications/${debateID}`);
+  return db.runTransaction(t => {
+    return t.getAll(userRef, notificationsRef)
+      .then(([user, notifications]) => {
+        t.delete(notificationsRef);
+        const newNotificationCount = user.data().notifications - notifications.data().count;
+        return t.update(userRef, { notifications: newNotificationCount });
+      })
+  })
+}
+
 function getDebate(debateID) {
   const db = admin.firestore();
   return db.doc(`Debates/${debateID}`).get()
@@ -56,4 +70,4 @@ function isActive(users) {
   return false;
 }
 
-module.exports = { getDebate, leaveDebate };
+module.exports = { getDebate, leaveDebate, clearNotifications };

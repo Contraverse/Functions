@@ -3,6 +3,7 @@ const admin = require('firebase-admin');
 require('..');
 
 describe('Firestore', () => {
+  const db = admin.firestore();
   const PATHS = ['Test1/doc1', 'Test2/doc2', 'Test3/doc3'];
   before(() => {
     const db = admin.firestore();
@@ -18,8 +19,14 @@ describe('Firestore', () => {
     return batch.commit();
   });
 
+  it('should return undefined on fake document', () => {
+    return db.doc('Fake/document').get()
+      .then(doc => {
+        assert.isUndefined(doc.data());
+      })
+  });
+
   it('should get multiple documents', () => {
-    const db = admin.firestore();
     const docs = PATHS.map(path => db.doc(path));
     return db.getAll(...docs).then(docs => {
       docs.forEach(doc => {
@@ -29,7 +36,6 @@ describe('Firestore', () => {
   });
 
   it('should not throw an error on a weird query', () => {
-    const db = admin.firestore();
     const query = db.collection('Avatars')
       .where('x.y.z', '==', true);
 

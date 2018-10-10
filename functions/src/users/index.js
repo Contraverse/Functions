@@ -1,5 +1,5 @@
 const { param, body, validationResult } = require('express-validator/check');
-const { createUser, updateUser, getRandomAvatar, updateToken } = require('./methods');
+const { createUser, updateUser, getRandomAvatar, updateToken, deleteToken } = require('./methods');
 const { isValidUser } = require('../validators');
 
 module.exports = function (app) {
@@ -46,6 +46,21 @@ module.exports = function (app) {
     const { token } = req.body;
 
     return updateToken(userID, token)
+      .then(() => res.status(200).send('OK'));
+  });
+
+
+  app.delete('/users/:userID/notifications', [
+    param('userID').exists().custom(isValidUser),
+  ], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    const { userID } = req.params;
+
+    return deleteToken(userID)
       .then(() => res.status(200).send('OK'));
   })
 };
