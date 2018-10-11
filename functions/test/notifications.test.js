@@ -89,6 +89,17 @@ describe('Notifications', () => {
 
           assert.equal(user.notifications, 1);
           assert.equal(notificationCount, 1);
+          return sendPollNotifications(DEBATE_ID, USER_ID, POLL_ID, { deliverNotification })
+        })
+        .then(() => db.getAll(getUserRef(), getPollNotificationsRef()))
+        .then(([userDoc, notificationDoc]) => {
+          const user = userDoc.data();
+          const notificationCount = notificationDoc.data().count;
+          const message = deliverNotification.getCall(1).args[0];
+
+          assert.equal(user.notifications, 2);
+          assert.equal(notificationCount, 2);
+          assert.equal(message.apns.payload.aps.badge, 2);
         })
     });
 
@@ -122,6 +133,17 @@ describe('Notifications', () => {
 
           assert.equal(user.notifications, 1);
           assert.equal(notificationCount, 1);
+          return sendMessageNotifications(DEBATE_ID, message, { deliverNotification });
+        })
+        .then(() => db.getAll(getUserRef(), getDebateNotificationsRef()))
+        .then(([userDoc, notificationDoc]) => {
+          const user = userDoc.data();
+          const notificationCount = notificationDoc.data().count;
+          const message = deliverNotification.getCall(1).args[0];
+
+          assert.equal(user.notifications, 2);
+          assert.equal(notificationCount, 2);
+          assert.equal(message.apns.payload.aps.badge, 2);
         })
     });
 
