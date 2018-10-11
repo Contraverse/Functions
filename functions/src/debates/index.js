@@ -1,7 +1,7 @@
 const { query, param, validationResult } = require('express-validator/check');
 const { validateUserID } = require('../auth');
 const { getDebates, findDebate } = require('./debates');
-const { getDebate, leaveDebate, clearNotifications } = require('./debate');
+const { getDebate, leaveDebate } = require('./debate');
 const { isValidPoll, isValidAnswer, isValidDebate } = require('../validators');
 
 module.exports = function (app) {
@@ -67,22 +67,6 @@ module.exports = function (app) {
     const { debateID } = req.params;
     const { userID } = req;
     return leaveDebate(userID, debateID)
-      .then(() => res.status(200).send('OK'));
-  });
-
-  app.post('/debates/:debateID/notifications', [
-    validateUserID,
-    param('debateID').exists().custom(isValidDebate)
-  ], (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
-    }
-
-    const { debateID } = req.params;
-    const { userID } = req;
-
-    return clearNotifications(debateID, userID)
       .then(() => res.status(200).send('OK'));
   });
 };

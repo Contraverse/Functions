@@ -3,13 +3,14 @@ const sinon = require('sinon');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const { api } = require('..');
-const { sendNotification } = require('../src/debates/notifications/methods');
+const sendPollNotifications = require('../src/notifications/polls/methods').sendNotification;
+const sendMessageNotifications = require('../src/notifications/chat/methods').sendNotification;
 const { createDocument, removeDocument, generateAuthHeader } = require('./utils');
 
 
 chai.use(chaiHttp);
 const { assert, request } = chai;
-const { USER_ID, TOKEN, DEBATE_ID, USERNAME, POLL_ID, QUESTION } = require('./testData');
+const { USER_ID, OPPONENT_ID, TOKEN, DEBATE_ID, USERNAME, POLL_ID, QUESTION } = require('./testData');
 
 describe('Notifications', () => {
   before(() => {
@@ -46,7 +47,7 @@ describe('Notifications', () => {
   });
 
 
-  describe('Message Notifications', () => {
+  describe('Notifications', () => {
     const db = admin.firestore();
     const TOKEN = 'FAKE_TOKEN';
 
@@ -54,7 +55,13 @@ describe('Notifications', () => {
       const batch = db.batch();
 
       batch.set(getUserRef(), { username: USERNAME });
-      batch.set(db.doc(`Debates/${DEBATE_ID}`), { test: true });
+      batch.set(db.doc(`Debates/${DEBATE_ID}`), {
+        users: {
+          [USER_ID]: { username: USERNAME },
+          [OPPONENT_ID]: { username: USERNAME }
+        },
+        pollID: POLL_ID
+      });
       batch.set(db.doc(`Polls/${POLL_ID}`), { title: QUESTION });
       batch.set(db.doc(`Tokens/${USER_ID}`), { token: TOKEN });
 
@@ -72,10 +79,10 @@ describe('Notifications', () => {
       return batch.commit();
     });
 
-    it('should send a notification (no fcm testing)', () => {
+    it('should send a poll notification (no fcm testing)', () => {
       const deliverNotification = sinon.stub();
-      return sendNotification(DEBATE_ID, USER_ID, POLL_ID, { deliverNotification })
-        .then(() => db.getAll(getUserRef(), getNotificationsRef()))
+      return sendPollNotifications(DEBATE_ID, USER_ID, POLL_ID, { deliverNotification })
+        .then(() => db.getAll(getUserRef(), getPollNotificationsRef()))
         .then(([userDoc, notificationDoc]) => {
           const user = userDoc.data();
           const notificationCount = notificationDoc.data().count;
@@ -85,13 +92,13 @@ describe('Notifications', () => {
         })
     });
 
-    it('should clear the notifications', () => {
+    it('should clear the poll notifications', () => {
       return request(api)
-        .post(`/debates/${DEBATE_ID}/notifications`)
+        .post(`/polls/${POLL_ID}/notifications`)
         .set('Authorization', generateAuthHeader(USER_ID))
         .then(res => {
           assert.equal(res.status, 200);
-          return db.getAll(getUserRef(), getNotificationsRef());
+          return db.getAll(getUserRef(), getPollNotificationsRef());
         }).then(([userDoc, notificationDoc]) => {
           const user = userDoc.data();
 
@@ -100,7 +107,44 @@ describe('Notifications', () => {
         })
     });
 
-    function getNotificationsRef() {
+    it('should send a message notification (no fcm testing)', () => {
+      const deliverNotification = sinon.stub();
+      const message = {
+        userID: OPPONENT_ID,
+        text: 'FAKE_MESSAGE'
+      };
+
+      return sendMessageNotifications(DEBATE_ID, message, { deliverNotification })
+        .then(() => db.getAll(getUserRef(), getDebateNotificationsRef()))
+        .then(([userDoc, notificationDoc]) => {
+          const user = userDoc.data();
+          const notificationCount = notificationDoc.data().count;
+
+          assert.equal(user.notifications, 1);
+          assert.equal(notificationCount, 1);
+        })
+    });
+
+    it('should clear the message notifications', () => {
+      return request(api)
+        .post(`/debates/${DEBATE_ID}/notifications`)
+        .set('Authorization', generateAuthHeader(USER_ID))
+        .then(res => {
+          assert.equal(res.status, 200);
+          return db.getAll(getUserRef(), getPollNotificationsRef());
+        }).then(([userDoc, notificationDoc]) => {
+          const user = userDoc.data();
+
+          assert.equal(user.notifications, 0);
+          assert.isFalse(notificationDoc.exists);
+        })
+    });
+
+    function getPollNotificationsRef() {
+      return db.doc(`Profiles/${USER_ID}/Notifications/${POLL_ID}`);
+    }
+
+    function getDebateNotificationsRef() {
       return db.doc(`Profiles/${USER_ID}/Notifications/${DEBATE_ID}`);
     }
 

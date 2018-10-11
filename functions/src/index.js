@@ -15,8 +15,9 @@ module.exports = function (testing = false) {
   require('./admin')(app, testing);
   require('./debates')(app, testing);
   require('./feedback')(app, testing);
-  require('./likes/index')(app, testing);
+  require('./likes')(app, testing);
   require('./messages')(app, testing);
+  require('./notifications/endpoint')(app, testing);
   require('./polls')(app, testing);
   require('./spectates')(app, testing);
   require('./users')(app, testing);
