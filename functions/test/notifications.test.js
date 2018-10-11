@@ -103,21 +103,6 @@ describe('Notifications', () => {
         })
     });
 
-    it('should clear the poll notifications', () => {
-      return request(api)
-        .post(`/polls/${POLL_ID}/notifications`)
-        .set('Authorization', generateAuthHeader(USER_ID))
-        .then(res => {
-          assert.equal(res.status, 200);
-          return db.getAll(getUserRef(), getPollNotificationsRef());
-        }).then(([userDoc, notificationDoc]) => {
-          const user = userDoc.data();
-
-          assert.equal(user.notifications, 0);
-          assert.isFalse(notificationDoc.exists);
-        })
-    });
-
     it('should send a message notification (no fcm testing)', () => {
       const deliverNotification = sinon.stub();
       const message = {
@@ -131,7 +116,7 @@ describe('Notifications', () => {
           const user = userDoc.data();
           const notificationCount = notificationDoc.data().count;
 
-          assert.equal(user.notifications, 1);
+          assert.equal(user.notifications, 3);
           assert.equal(notificationCount, 1);
           return sendMessageNotifications(DEBATE_ID, message, { deliverNotification });
         })
@@ -141,9 +126,24 @@ describe('Notifications', () => {
           const notificationCount = notificationDoc.data().count;
           const message = deliverNotification.getCall(1).args[0];
 
-          assert.equal(user.notifications, 2);
+          assert.equal(user.notifications, 4);
           assert.equal(notificationCount, 2);
-          assert.equal(message.apns.payload.aps.badge, 2);
+          assert.equal(message.apns.payload.aps.badge, 4);
+        })
+    });
+
+    it('should clear the poll notifications', () => {
+      return request(api)
+        .post(`/polls/${POLL_ID}/notifications`)
+        .set('Authorization', generateAuthHeader(USER_ID))
+        .then(res => {
+          assert.equal(res.status, 200);
+          return db.getAll(getUserRef(), getPollNotificationsRef());
+        }).then(([userDoc, notificationDoc]) => {
+          const user = userDoc.data();
+
+          assert.equal(user.notifications, 2);
+          assert.isFalse(notificationDoc.exists);
         })
     });
 
