@@ -1,3 +1,5 @@
+const admin = require('firebase-admin');
+
 function sendFCMNotification(message) {
   return admin.messaging().send(message);
 }

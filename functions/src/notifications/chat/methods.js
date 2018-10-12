@@ -1,7 +1,7 @@
 const admin = require('firebase-admin');
 const { sendFCMNotification, getNotificationCount, setNotificationCount } = require('../utils');
 
-function sendNotification(debateID, message, { deliverNotification = sendFCMNotification }) {
+function sendNotification(debateID, message, { deliverNotification = sendFCMNotification } = {}) {
   const db = admin.firestore();
   const debateRef = db.doc(`Debates/${debateID}`);
 

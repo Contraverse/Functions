@@ -1,7 +1,7 @@
 const admin = require('firebase-admin');
 const { sendFCMNotification, getNotificationCount, setNotificationCount } = require('../utils');
 
-function sendNotification(chatID, userID, pollID, { deliverNotification = sendFCMNotification }) {
+function sendNotification(chatID, userID, pollID, { deliverNotification = sendFCMNotification } = {}) {
   const db = admin.firestore();
   const userRef = db.doc(`Profiles/${userID}`);
   const notificationsRef = db.doc(`Profiles/${userID}/Notifications/${pollID}`);
