@@ -4,7 +4,7 @@ const { sendFCMNotification, getNotificationCount, setNotificationCount, getAPNS
 function sendNotification(chatID, userID, pollID, { deliverNotification = sendFCMNotification } = {}) {
   const db = admin.firestore();
   const userRef = db.doc(`Profiles/${userID}`);
-  const notificationsRef = db.doc(`Profiles/${userID}/Notifications/${pollID}`);
+  const notificationsRef = db.doc(`Profiles/${userID}/Notifications/${chatID}`);
   const pollRef = db.doc(`Polls/${pollID}`);
   const tokenRef = db.doc(`Tokens/${userID}`);
 
