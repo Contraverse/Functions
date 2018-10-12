@@ -39,7 +39,6 @@ function createNotification(chatID, user, poll, token, notificationCount) {
 
   const apns = getAPNSConfig(notificationCount);
 
-  console.log('Notification', notification, apns, data, token);
   return { notification, apns, data, token };
 }
 

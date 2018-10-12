@@ -5,8 +5,7 @@ function sendNotification(debateID, message, { deliverNotification = sendFCMNoti
   const db = admin.firestore();
   const debateRef = db.doc(`Debates/${debateID}`);
 
-
-  let opponentUsername = null;
+  let username = null;
   let notificationsRef = null;
   let userRef = null;
 
@@ -15,7 +14,7 @@ function sendNotification(debateID, message, { deliverNotification = sendFCMNoti
       .then(doc => {
         const { users, pollID } = doc.data();
         const opponentID = getOpponentID(users, message.userID);
-        opponentUsername = users[opponentID].username;
+        username = users[message.userID].username;
 
         userRef = db.doc(`Profiles/${opponentID}`);
         notificationsRef = db.doc(`Profiles/${opponentID}/Notifications/${debateID}`);
@@ -33,7 +32,7 @@ function sendNotification(debateID, message, { deliverNotification = sendFCMNoti
         const totalNotificationCount = (user.notifications || 0) + 1;
         setNotificationCount(t, userRef, notificationsRef, totalNotificationCount, debateNotificationCount);
 
-        const body = createNotification(debateID, message, pollQuestion, opponentUsername, totalNotificationCount, token);
+        const body = createNotification(debateID, message, pollQuestion, username, totalNotificationCount, token);
         return deliverNotification(body);
       })
   });
