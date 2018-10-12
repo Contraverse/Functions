@@ -5,7 +5,7 @@ const { api } = require('..');
 const { findDebate } = require('../src/debates/debates');
 const { createPoll } = require('../src/polls/methods');
 const { createUser } = require('../src/users/methods');
-const { createDocument, removePoll, removeUser, generateAuthHeader } = require('./utils');
+const { removePoll, removeUser, generateAuthHeader } = require('./utils');
 
 const { QUESTION, ANSWERS, USER_ID, AVATAR, USERNAME, OPPONENT_ID } = require('./testData');
 chai.use(chaiHttp);
@@ -62,16 +62,7 @@ describe('Debates', () => {
     let opponentAnswer = 1;
 
     before(() => {
-      const db = admin.firestore();
-      const batch = db.batch();
-      createDocument(batch, `Profiles/${USER_ID}`);
-      createDocument(batch, `Profiles/${OPPONENT_ID}`);
-      batch.set(db.doc(`Polls/${POLL_ID}`), { question: QUESTION, answers: ANSWERS });
-
-      return Promise.all([
-        findDebate(USER_ID, POLL_ID, answer),
-        batch.commit()
-      ]);
+      return findDebate(USER_ID, POLL_ID, answer);
     });
 
     after(() => {

@@ -70,10 +70,11 @@ describe('Users', () => {
   });
 
   describe('Background', () => {
+    const NEW_AVATAR = 'FAKE_NEW_AVATAR';
     before(() => {
       const doc = {
         users: {
-          [USER_ID]: { update: true }
+          [USER_ID]: { update: true, avatar: AVATAR, username: USERNAME }
         }
       };
 
@@ -85,11 +86,11 @@ describe('Users', () => {
     });
 
     it('should update the debate', () => {
-      const newUser = { newKey: true };
+      const newUser = { avatar: NEW_AVATAR, username: USERNAME };
       return updateUsersinDebates(USER_ID, newUser)
         .then(() => getDebateRef().get())
         .then(doc => {
-          assert.deepEqual(doc.data().users[USER_ID], newUser);
+          assert.equal(doc.data().users[USER_ID].avatar, NEW_AVATAR);
         })
     });
 

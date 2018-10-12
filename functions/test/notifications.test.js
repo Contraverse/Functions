@@ -84,7 +84,7 @@ describe('Notifications', () => {
 
     it('should send a poll notification (no fcm testing)', () => {
       const deliverNotification = sinon.stub();
-      return sendPollNotifications(DEBATE_ID, USER_ID, POLL_ID, { deliverNotification })
+      return sendPollNotifications(DEBATE_ID, POLL_ID, USER_ID, USER_ID, { deliverNotification })
         .then(() => db.getAll(getUserRef(), getDebateNotificationsRef()))
         .then(([userDoc, notificationDoc]) => {
           const user = userDoc.data();
@@ -92,7 +92,7 @@ describe('Notifications', () => {
 
           assert.equal(user.notifications, 1);
           assert.equal(notificationCount, 1);
-          return sendPollNotifications(DEBATE_ID, USER_ID, POLL_ID, { deliverNotification })
+          return sendPollNotifications(DEBATE_ID, POLL_ID, USER_ID, USER_ID, { deliverNotification })
         })
         .then(() => db.getAll(getUserRef(), getDebateNotificationsRef()))
         .then(([userDoc, notificationDoc]) => {
