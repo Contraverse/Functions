@@ -9,6 +9,7 @@ function updateUserDocsInDebates(app) {
     })
 }
 
+
 function _updateUserDocsInDebates(userID, newUser) {
   const db = admin.firestore();
   const query = db.collection('Debates')
@@ -18,9 +19,10 @@ function _updateUserDocsInDebates(userID, newUser) {
     .then(snapshot => {
       const batch = db.batch();
       for (const doc of snapshot.docs) {
-        const debate = doc.data();
-        debate.users[userID] = newUser;
-        batch.update(doc.ref, debate);
+        batch.update(doc.ref, {
+          [`users.${userID}.username`]: newUser.username,
+          [`users.${userID}.avatar`]: newUser.avatar
+        });
       }
       return batch.commit();
     })

@@ -11,19 +11,25 @@ function leaveDebate(userID, debateID) {
   const db = admin.firestore();
   return db.runTransaction(t => {
     const debateRef = db.doc(`Debates/${debateID}`);
+    const userRef = db.doc(`Profiles/${userID}`);
+    const notificationsRef = db.doc(`Profiles/${userID}/Notifications/${debateID}`);
+
     let debate = null;
-    return t.get(debateRef).then(doc => {
-      debate = doc.data();
-      debate.users[userID].active = false;
-      if (isActive(debate.users)) {
-        t.update(debateRef, debate);
-        return generateSystemLeaveMessage(userID)
-          .then(message => t.set(debateRef.collection('Messages').doc(), message));
-      }
-      else {
-        return deleteDebate(t, debateRef);
-      }
-    })
+    return t.getAll(debateRef, userRef, notificationsRef)
+      .then(([debateDoc, userDoc, notificationDoc]) => {
+        debate = debateDoc.data();
+
+        debate.users[userID].active = false;
+        clearNotifications(t, userRef, notificationsRef, userDoc, notificationDoc);
+        if (isActive(debate.users)) {
+          t.update(debateRef, debate);
+          return generateSystemLeaveMessage(userID)
+            .then(message => t.set(debateRef.collection('Messages').doc(), message));
+        }
+        else {
+          return deleteDebate(t, debateRef);
+        }
+      })
   })
 }
 
@@ -33,6 +39,14 @@ function deleteDebate(t, ref) {
       snapshot.docs.forEach(doc => t.delete(doc.ref));
       return t.delete(ref);
     });
+}
+
+function clearNotifications(t, userRef, notificationsRef, userDoc, notificationDoc) {
+  if (notificationDoc.exists) {
+    const newCount = userDoc.data().notifications - notificationDoc.data().count;
+    t.update(userRef, { notifications: newCount });
+    t.delete(notificationsRef);
+  }
 }
 
 function generateSystemLeaveMessage(userID) {
