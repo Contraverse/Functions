@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const { sendFCMNotification, getNotificationCount, setNotificationCount } = require('../utils');
+const { sendFCMNotification, getNotificationCount, setNotificationCount, getAPNSConfig } = require('../utils');
 
 function sendNotification(debateID, message, { deliverNotification = sendFCMNotification } = {}) {
   const db = admin.firestore();
@@ -55,13 +55,7 @@ function createNotification(debateID, message, question, username, totalNotifica
     debateId: debateID
   };
 
-  const apns = {
-    payload: {
-      aps: {
-        badge: totalNotificationCount,
-      }
-    }
-  };
+  const apns = getAPNSConfig(totalNotificationCount);
 
   return { notification, data, apns, token };
 }

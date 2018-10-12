@@ -15,4 +15,15 @@ function setNotificationCount(t, userRef, notificationsRef, totalNotificationCou
   t.set(notificationsRef, { count: debateNotificationCount });
 }
 
-module.exports = { sendFCMNotification, getNotificationCount, setNotificationCount };
+function getAPNSConfig(badge = 1) {
+  return {
+    payload: {
+      aps: {
+        badge,
+        sound: 'default'
+      }
+    }
+  };
+}
+
+module.exports = { sendFCMNotification, getNotificationCount, setNotificationCount, getAPNSConfig };
