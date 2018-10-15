@@ -1,19 +1,14 @@
-const { query, param, validationResult } = require('express-validator/check');
+const { query, param } = require('express-validator/check');
 const { validateUserID } = require('../auth');
 const { getDebates, findDebate } = require('./debates');
 const { getDebate, leaveDebate } = require('./debate');
-const { isValidPoll, isValidAnswer, isValidDebate } = require('../validators');
+const { isValidPoll, isValidAnswer, isValidDebate, validateRequest } = require('../validators');
 
 module.exports = function (app) {
 
   app.get('/debates',
     validateUserID,
     (req, res) => {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(422).json({ errors: errors.array() });
-      }
-
       const { userID } = req;
 
       return getDebates(userID)
@@ -23,12 +18,9 @@ module.exports = function (app) {
   app.post('/debates', [
     validateUserID,
     query('pollID').exists().custom(isValidPoll),
-    query('category').exists().custom(isValidAnswer)
+    query('category').exists().custom(isValidAnswer),
+    validateRequest
   ], (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
-    }
     const { userID } = req;
     const { pollID, category } = req.query;
 
@@ -44,12 +36,8 @@ module.exports = function (app) {
 
   app.get('/debates/:debateID',
     param('debateID').exists().custom(isValidDebate),
+    validateRequest,
     (req, res) => {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(422).json({ errors: errors.array() });
-      }
-
       const { debateID } = req.params;
       return getDebate(debateID)
         .then(result => res.status(200).send(result));
@@ -58,12 +46,8 @@ module.exports = function (app) {
   app.delete('/debates/:debateID', [
     validateUserID,
     param('debateID').exists().custom(isValidDebate),
+    validateRequest
   ], (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
-    }
-
     const { debateID } = req.params;
     const { userID } = req;
     return leaveDebate(userID, debateID)

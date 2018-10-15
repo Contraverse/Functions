@@ -37,6 +37,15 @@ describe('Likes', () => {
     ]);
   });
 
+  it('should throw an error without message ID', () => {
+    return request(api)
+      .post(`/debates/${DEBATE_ID}/likes`)
+      .set('Authorization', generateAuthHeader(USER_ID))
+      .then(res => {
+        assert.equal(res.status, 422);
+      });
+  });
+
   it('should like a message', () => {
     return request(api)
       .post(`/debates/${DEBATE_ID}/likes`)
@@ -50,7 +59,17 @@ describe('Likes', () => {
       }).then(([messageDoc, likeDoc]) => {
         assert.equal(messageDoc.data().likes, 1);
         assert.isTrue(likeDoc.exists);
-      })
+      });
+  });
+
+  it('should throw an error when already liked', () => {
+    return request(api)
+      .post(`/debates/${DEBATE_ID}/likes`)
+      .set('Authorization', generateAuthHeader(USER_ID))
+      .query({ messageID: MESSAGE_ID })
+      .then(res => {
+        assert.equal(res.status, 403);
+      });
   });
 
   it('should dislike a message', () => {
@@ -67,6 +86,16 @@ describe('Likes', () => {
         assert.equal(messageDoc.data().likes, 0);
         assert.isFalse(likeDoc.exists);
       })
+  });
+
+  it('should throw an error when message has not been liked', () => {
+    return request(api)
+      .delete(`/debates/${DEBATE_ID}/likes`)
+      .set('Authorization', generateAuthHeader(USER_ID))
+      .query({ messageID: MESSAGE_ID })
+      .then(res => {
+        assert.equal(res.status, 403);
+      });
   });
 
   it('should send 422 for without Authorization', () => {

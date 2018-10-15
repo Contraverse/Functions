@@ -51,4 +51,23 @@ function castVote(userID, pollID, answer) {
   })
 }
 
-module.exports = { getPolls, createPoll, castVote };
+function clearVote(userID, pollID) {
+  const db = admin.firestore();
+  const votesRef = db.doc(`Profiles/${userID}/Polls/${pollID}`);
+  const resultsRef = db.doc(`Results/${pollID}`);
+
+  return db.runTransaction(t => {
+    return t.getAll(votesRef, resultsRef)
+      .then(([votesDoc, resultsDoc]) => {
+        const totalVotes = resultsDoc.data();
+        const { answer } = votesDoc.data();
+        totalVotes.counts[answer]--;
+
+        t.delete(votesRef);
+        t.set(resultsRef, totalVotes);
+        return answer;
+      })
+  })
+}
+
+module.exports = { getPolls, createPoll, castVote, clearVote };

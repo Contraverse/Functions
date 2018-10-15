@@ -1,18 +1,14 @@
-const { param, body, validationResult } = require('express-validator/check');
+const { param, body } = require('express-validator/check');
 const { sendMessages, formatMessages } = require('./methods');
-const { isValidDebate } = require('../validators');
+const { isValidDebate, validateRequest } = require('../validators');
 
 module.exports = function (app) {
   app.post('/debates/:debateID/messages', [
     param('debateID').exists().custom(isValidDebate),
     body('messages').exists()
-      .customSanitizer(messages => formatMessages(messages))
+      .customSanitizer(messages => formatMessages(messages)),
+    validateRequest
   ], (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(422).send(errors.array());
-    }
-
     const { debateID } = req.params;
     const { messages } = req.body;
 

@@ -53,5 +53,46 @@ describe('Case Vote', () => {
           assert.deepEqual(totalVotes.counts, targetVotes);
         })
       })
+  });
+
+  it('should return an error when a invalid pollID is sent', () => {
+    return request(api)
+      .delete(`/polls/INVALID-POLL-ID`)
+      .set('Accept', 'application/json')
+      .set('Authorization', generateAuthHeader(USER_ID))
+      .then(res => {
+        assert.equal(res.status, 422);
+      })
+  });
+
+  it('should clear the vote', () => {
+    const db = admin.firestore();
+    const targetVotes = [0, 0];
+    const userVotesRef = db.doc(`Profiles/${USER_ID}/Polls/${pollID}`);
+    const totalVotesRef = db.doc(`Results/${pollID}`);
+
+    return request(api)
+      .delete(`/polls/${pollID}`)
+      .set('Accept', 'application/json')
+      .set('Authorization', generateAuthHeader(USER_ID))
+      .then(res => {
+        assert.equal(res.status, 200);
+
+        return db.getAll(userVotesRef, totalVotesRef)
+      })
+      .then(([userVotesDoc, totalVotesDoc]) => {
+        assert.isFalse(userVotesDoc.exists);
+        assert.deepEqual(totalVotesDoc.data().counts, targetVotes);
+      })
+  });
+
+  it('should return an error when a user has not voted but tried to clear their votes', () => {
+    return request(api)
+      .delete(`/polls/${pollID}`)
+      .set('Accept', 'application/json')
+      .set('Authorization', generateAuthHeader(USER_ID))
+      .then(res => {
+        assert.equal(res.status, 403);
+      })
   })
 });

@@ -1,17 +1,13 @@
 const { param, body, validationResult } = require('express-validator/check');
 const { createUser, updateUser, getRandomAvatar, updateToken, deleteToken } = require('./methods');
-const { isValidUser } = require('../validators');
+const { isValidUser, validateRequest } = require('../validators');
 
 module.exports = function (app) {
   app.post('/users', [
     body('userID').exists(),
-    body('username').exists()
+    body('username').exists(),
+    validateRequest
   ], (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
-    }
-
     const { userID, username } = req.body;
     return getRandomAvatar()
       .then(avatar => createUser(userID, avatar, username))
@@ -20,12 +16,8 @@ module.exports = function (app) {
 
   app.put('/users/:userID',
     param('userID').exists().custom(isValidUser),
+    validateRequest,
     (req, res) => {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(422).json({ errors: errors.array() });
-      }
-
       const { userID } = req.params;
       const { avatar, username } = req.body;
 
@@ -35,13 +27,9 @@ module.exports = function (app) {
 
   app.post('/users/:userID/notifications', [
     param('userID').exists().custom(isValidUser),
-    body('token').exists()
+    body('token').exists(),
+    validateRequest
   ], (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
-    }
-
     const { userID } = req.params;
     const { token } = req.body;
 
@@ -52,12 +40,8 @@ module.exports = function (app) {
 
   app.delete('/users/:userID/notifications', [
     param('userID').exists().custom(isValidUser),
+    validateRequest
   ], (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
-    }
-
     const { userID } = req.params;
 
     return deleteToken(userID)
